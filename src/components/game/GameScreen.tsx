@@ -135,28 +135,22 @@ export function GameScreen({ score, difficulty, scrollSpeed, pitchResult, onBack
     setPhase('countdown')
   }, [score, difficulty])
 
-  // 結果画面
-  if (phase === 'result' && result) {
-    return (
-      <div className="bg-[#1A1A1A] rounded-lg p-6">
-        <ResultScreen result={result} onRetry={handleRetry} onBack={onBack} />
-      </div>
-    )
-  }
-
   const currentTime = gameState?.currentTimeMs ?? 0
   const notes = gameState?.notes ?? engineRef.current?.gameNotes ?? []
+  const nextNoteIndex = gameState?.nextNoteIndex ?? 0
 
   // 次に判定するノートの運指を取得
+  // nextNoteIndex を依存に含めることで、判定が進むたびに再計算される
   const nextNote = useMemo(() => {
     if (diffConfig.showFingering === 'none') return null
-    for (const note of notes) {
+    for (let i = nextNoteIndex; i < notes.length; i++) {
+      const note = notes[i]!
       if (!note.judged && note.frequency !== null && note.register !== null && note.shinobueNumber !== null) {
         return note
       }
     }
     return null
-  }, [notes, diffConfig.showFingering])
+  }, [notes, nextNoteIndex, diffConfig.showFingering])
 
   // 運指チャートから該当する音を検索
   const activeFingeringNote: ShinobueNote | null = useMemo(() => {
@@ -173,6 +167,15 @@ export function GameScreen({ score, difficulty, scrollSpeed, pitchResult, onBack
   const showFingering = diffConfig.showFingering !== 'none'
   const showPitchMeter = diffConfig.pitchMeterSize !== 'hidden'
   const showBottomPanel = showFingering || showPitchMeter
+
+  // 結果画面 (全 hooks の後に配置 — React hooks ルールを遵守)
+  if (phase === 'result' && result) {
+    return (
+      <div className="bg-[#1A1A1A] rounded-lg p-6">
+        <ResultScreen result={result} onRetry={handleRetry} onBack={onBack} />
+      </div>
+    )
+  }
 
   return (
     <div className="relative bg-[#1A1A1A] rounded-lg overflow-hidden">

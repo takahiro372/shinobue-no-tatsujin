@@ -41,6 +41,8 @@ export interface GameState {
   maxCombo: number
   judgements: JudgementResult[]
   notes: GameNote[]
+  /** 次に判定チェックするノートのインデックス */
+  nextNoteIndex: number
 }
 
 /** ゲーム結果 */

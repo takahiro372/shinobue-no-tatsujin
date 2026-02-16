@@ -234,6 +234,7 @@ export class GameEngine {
       maxCombo: this.combo.maxCombo,
       judgements: this.notes.filter((n) => n.judgement).map((n) => n.judgement!),
       notes: this.notes,
+      nextNoteIndex: this.nextNoteIndex,
     }
   }
 
