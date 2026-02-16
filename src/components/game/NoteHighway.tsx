@@ -7,6 +7,8 @@ export interface NoteHighwayProps {
   currentTimeMs: number
   /** 表示する時間幅 (ms) 画面幅に何ミリ秒分のノートを表示するか */
   visibleDurationMs?: number
+  /** スクロール速度係数 (>1 で速い = 表示時間幅が狭くなる) */
+  scrollSpeed?: number
   width?: number
   height?: number
 }
@@ -140,9 +142,12 @@ export function NoteHighway({
   notes,
   currentTimeMs,
   visibleDurationMs = 4000,
+  scrollSpeed = 1.0,
   width = 800,
   height = 300,
 }: NoteHighwayProps) {
+  // scrollSpeed で表示時間幅を調整 (速い → 狭い → ノートが速く流れる)
+  const effectiveDuration = visibleDurationMs / scrollSpeed
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // 楽曲の音域を一度だけ計算 (notes 参照が変わった時のみ)
@@ -160,7 +165,7 @@ export function NoteHighway({
 
     const judgeLineX = width * JUDGE_LINE_X_RATIO
     // 時間→X座標: 判定ラインが currentTimeMs に対応
-    const pxPerMs = (width - judgeLineX) / visibleDurationMs
+    const pxPerMs = (width - judgeLineX) / effectiveDuration
 
     // 背景
     ctx.fillStyle = COLORS.bg
@@ -170,11 +175,11 @@ export function NoteHighway({
     drawRegisterBoundaries(ctx, registerBoundaries, pitchRange, width, height)
 
     // 背景グリッドライン (拍)
-    drawBeatGrid(ctx, currentTimeMs, visibleDurationMs, judgeLineX, pxPerMs, width, height)
+    drawBeatGrid(ctx, currentTimeMs, effectiveDuration, judgeLineX, pxPerMs, width, height)
 
     // ノート描画 (カリング)
     const viewStartMs = currentTimeMs - (judgeLineX / pxPerMs)
-    const viewEndMs = currentTimeMs + visibleDurationMs
+    const viewEndMs = currentTimeMs + effectiveDuration
 
     for (const note of notes) {
       const noteEndMs = note.timeMs + note.durationMs
@@ -186,7 +191,7 @@ export function NoteHighway({
     // 判定ライン
     drawJudgeLine(ctx, judgeLineX, height)
 
-  }, [notes, currentTimeMs, visibleDurationMs, width, height, pitchRange, registerBoundaries])
+  }, [notes, currentTimeMs, effectiveDuration, width, height, pitchRange, registerBoundaries])
 
   useEffect(() => {
     draw()

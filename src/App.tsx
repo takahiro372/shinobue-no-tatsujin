@@ -31,6 +31,7 @@ export default function App() {
   // ゲームモード用の状態
   const [gameScore, setGameScore] = useState<Score | null>(null)
   const [gameDifficulty, setGameDifficulty] = useState<Difficulty>('intermediate')
+  const [gameScrollSpeed, setGameScrollSpeed] = useState<number>(1.0)
   const [isPlaying, setIsPlaying] = useState(false)
 
   // エディタの未保存状態
@@ -51,9 +52,10 @@ export default function App() {
   // 音程検出 (ゲームモード + 練習モードで使用)
   const pitch = usePitchDetection()
 
-  const handleGameStart = useCallback(async (score: Score, difficulty: Difficulty) => {
+  const handleGameStart = useCallback(async (score: Score, difficulty: Difficulty, scrollSpeed: number) => {
     setGameScore(score)
     setGameDifficulty(difficulty)
+    setGameScrollSpeed(scrollSpeed)
     setIsPlaying(true)
     // マイクを起動
     if (!pitch.isRunning) {
@@ -133,6 +135,7 @@ export default function App() {
             <GameScreen
               score={gameScore}
               difficulty={gameDifficulty}
+              scrollSpeed={gameScrollSpeed}
               pitchResult={pitch.pitchResult}
               onBack={handleGameBack}
             />

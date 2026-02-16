@@ -220,6 +220,7 @@ describe('NoteInput', () => {
     render(
       <NoteInput
         shinobueKey="nana"
+        mode="append"
         onNoteSelect={() => {}}
         onRestSelect={() => {}}
       />,
@@ -233,6 +234,7 @@ describe('NoteInput', () => {
     render(
       <NoteInput
         shinobueKey="nana"
+        mode="append"
         onNoteSelect={() => {}}
         onRestSelect={() => {}}
       />,
@@ -244,6 +246,7 @@ describe('NoteInput', () => {
     render(
       <NoteInput
         shinobueKey="nana"
+        mode="append"
         onNoteSelect={() => {}}
         onRestSelect={() => {}}
       />,
@@ -258,10 +261,61 @@ describe('NoteInput', () => {
     render(
       <NoteInput
         shinobueKey="nana"
+        mode="append"
         onNoteSelect={() => {}}
         onRestSelect={() => {}}
       />,
     )
     expect(screen.queryByText('大5')).not.toBeInTheDocument()
+  })
+
+  it('追加モードで「追加モード」と表示される', () => {
+    render(
+      <NoteInput
+        shinobueKey="nana"
+        mode="append"
+        onNoteSelect={() => {}}
+        onRestSelect={() => {}}
+      />,
+    )
+    expect(screen.getByTestId('input-mode-indicator')).toHaveTextContent('追加モード')
+  })
+
+  it('上書きモードで「上書きモード」と表示される', () => {
+    render(
+      <NoteInput
+        shinobueKey="nana"
+        mode="overwrite"
+        onNoteSelect={() => {}}
+        onRestSelect={() => {}}
+      />,
+    )
+    expect(screen.getByTestId('input-mode-indicator')).toHaveTextContent('上書きモード')
+  })
+
+  it('上書きモードでは赤色の背景が表示される', () => {
+    render(
+      <NoteInput
+        shinobueKey="nana"
+        mode="overwrite"
+        onNoteSelect={() => {}}
+        onRestSelect={() => {}}
+      />,
+    )
+    const indicator = screen.getByTestId('input-mode-indicator')
+    expect(indicator.className).toContain('text-[#C41E3A]')
+  })
+
+  it('追加モードでは青色の背景が表示される', () => {
+    render(
+      <NoteInput
+        shinobueKey="nana"
+        mode="append"
+        onNoteSelect={() => {}}
+        onRestSelect={() => {}}
+      />,
+    )
+    const indicator = screen.getByTestId('input-mode-indicator')
+    expect(indicator.className).toContain('text-[#1B4F72]')
   })
 })

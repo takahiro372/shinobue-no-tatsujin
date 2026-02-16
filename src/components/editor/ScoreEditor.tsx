@@ -9,6 +9,7 @@ import { saveSong, getSongs, deleteSong, generateSongId } from '../../utils/song
 import { parseMusicXML } from '../../score/ScoreParser'
 import type { SavedSong } from '../../utils/songStorage'
 import type { Score, NotePitch } from '../../score/ScoreModel'
+import type { InputMode } from './NoteInput'
 import type { DurationType } from '../../types/music'
 
 interface ScoreEditorProps {
@@ -76,13 +77,17 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
     }
   }, [editor])
 
-  // 休符入力: 常に次の拍に休符を追加（連続入力モード）
+  // 休符入力: 選択中なら休符に差し替え、未選択なら末尾に追加
   const handleRestSelect = useCallback(() => {
-    const measure = editor.score.measures.find((m) => m.number === editor.selectedMeasure)
-    if (!measure) return
-    const lastNote = measure.notes[measure.notes.length - 1]
-    const startBeat = lastNote ? lastNote.startBeat + 1 : 0
-    editor.addNote(editor.selectedMeasure, undefined, startBeat, 'rest')
+    if (editor.selectedNoteId) {
+      editor.replaceNote(editor.selectedMeasure, editor.selectedNoteId, undefined, 'rest')
+    } else {
+      const measure = editor.score.measures.find((m) => m.number === editor.selectedMeasure)
+      if (!measure) return
+      const lastNote = measure.notes[measure.notes.length - 1]
+      const startBeat = lastNote ? lastNote.startBeat + 1 : 0
+      editor.addNote(editor.selectedMeasure, undefined, startBeat, 'rest')
+    }
   }, [editor])
 
   // 音価変更: 選択中の音符の音価も変更
@@ -233,6 +238,11 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
         e.preventDefault()
         handleSaveRef.current()
       }
+      // Escape: 選択解除
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        ed.setSelectedNoteId(null)
+      }
       // Delete selected note
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (ed.selectedNoteId) {
@@ -260,6 +270,14 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [])
+
+  // 入力モード
+  const inputMode: InputMode = editor.selectedNoteId ? 'overwrite' : 'append'
+
+  // 小節エリアの空白クリックで選択解除
+  const handleDeselect = useCallback(() => {
+    editor.setSelectedNoteId(null)
+  }, [editor])
 
   return (
     <div className="space-y-4">
@@ -347,12 +365,12 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-4">
         <div className="space-y-4">
           {/* 小節一覧 */}
-          <div className="overflow-x-auto pb-2">
+          <div className="overflow-x-auto pb-2" onClick={handleDeselect} data-testid="measures-area">
             <div className="flex gap-2 min-w-max">
               {editor.score.measures.map((measure) => (
                 <div
                   key={measure.number}
-                  onClick={() => editor.setSelectedMeasure(measure.number)}
+                  onClick={(e) => { e.stopPropagation(); editor.setSelectedMeasure(measure.number) }}
                   className={`cursor-pointer transition-all ${
                     editor.selectedMeasure === measure.number
                       ? 'ring-2 ring-[#C41E3A] rounded-lg'
@@ -387,6 +405,7 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
         {/* 音符入力パネル */}
         <NoteInput
           shinobueKey={shinobueKey}
+          mode={inputMode}
           onNoteSelect={handleNoteSelect}
           onRestSelect={handleRestSelect}
         />

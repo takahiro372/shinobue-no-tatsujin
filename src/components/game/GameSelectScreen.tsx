@@ -5,16 +5,28 @@ import { getSongs } from '../../utils/songStorage'
 import type { SavedSong } from '../../utils/songStorage'
 import type { Score } from '../../score/ScoreModel'
 import type { Difficulty } from '../../types/music'
+import { DIFFICULTY_CONFIGS } from '../../types/game'
 
 export interface GameSelectScreenProps {
-  onStart: (score: Score, difficulty: Difficulty) => void
+  onStart: (score: Score, difficulty: Difficulty, scrollSpeed: number) => void
 }
 
 const DIFFICULTIES: { id: Difficulty; label: string; desc: string }[] = [
-  { id: 'beginner', label: '入門', desc: '判定が緩く、ガイド表示あり' },
-  { id: 'intermediate', label: '中級', desc: '標準的な難易度' },
-  { id: 'advanced', label: '上級', desc: '判定が厳しめ' },
-  { id: 'master', label: '達人', desc: 'ガイドなし、厳密判定' },
+  { id: 'beginner', label: '入門', desc: '呂音のみ・ゆっくり・判定緩め・運指+音程ガイド' },
+  { id: 'intermediate', label: '中級', desc: '呂音+甲音・標準速度・運指+音程ガイド' },
+  { id: 'advanced', label: '上級', desc: '全音域・速め・判定厳しめ・装飾音あり' },
+  { id: 'master', label: '達人', desc: '全音域・最速・厳密判定・ガイドなし・装飾音あり' },
+]
+
+const SCROLL_SPEED_OPTIONS = [
+  { value: 0.4, label: 'とても遅い' },
+  { value: 0.6, label: '遅い' },
+  { value: 0.8, label: 'やや遅い' },
+  { value: 1.0, label: 'ふつう' },
+  { value: 1.2, label: 'やや速い' },
+  { value: 1.4, label: '速い' },
+  { value: 1.8, label: 'とても速い' },
+  { value: 2.2, label: '最速' },
 ]
 
 interface SongEntry {
@@ -40,10 +52,17 @@ const SONG_CATALOG: SongEntry[] = [
 export function GameSelectScreen({ onStart }: GameSelectScreenProps) {
   const { shinobueKey } = useSettingsStore()
   const [difficulty, setDifficulty] = useState<Difficulty>('intermediate')
+  const [scrollSpeed, setScrollSpeed] = useState<number>(DIFFICULTY_CONFIGS.intermediate.scrollSpeed)
   const [selectedSong, setSelectedSong] = useState<string>('sakura')
   const [loadedScores, setLoadedScores] = useState<Record<string, Score>>({})
   const [loading, setLoading] = useState(false)
   const [librarySongs, setLibrarySongs] = useState<SavedSong[]>([])
+
+  // 難易度変更時に推奨スクロール速度を設定
+  const handleDifficultyChange = useCallback((d: Difficulty) => {
+    setDifficulty(d)
+    setScrollSpeed(DIFFICULTY_CONFIGS[d].scrollSpeed)
+  }, [])
 
   // ライブラリから保存済み楽曲を読み込み
   useEffect(() => {
@@ -90,10 +109,14 @@ export function GameSelectScreen({ onStart }: GameSelectScreenProps) {
   const handleStart = useCallback(() => {
     const score = loadedScores[selectedSong]
     if (!score) return
-    onStart(score, difficulty)
-  }, [difficulty, selectedSong, loadedScores, onStart])
+    onStart(score, difficulty, scrollSpeed)
+  }, [difficulty, scrollSpeed, selectedSong, loadedScores, onStart])
 
   const currentScore = loadedScores[selectedSong]
+
+  // 現在のスクロール速度に一致するオプションのラベル
+  const currentSpeedLabel = SCROLL_SPEED_OPTIONS.find((o) => o.value === scrollSpeed)?.label
+    ?? `x${scrollSpeed.toFixed(1)}`
 
   return (
     <div className="flex flex-col items-center gap-8 py-8">
@@ -173,7 +196,7 @@ export function GameSelectScreen({ onStart }: GameSelectScreenProps) {
                 name="difficulty"
                 value={d.id}
                 checked={difficulty === d.id}
-                onChange={() => setDifficulty(d.id)}
+                onChange={() => handleDifficultyChange(d.id)}
                 className="accent-[var(--color-primary)]"
               />
               <div>
@@ -182,6 +205,35 @@ export function GameSelectScreen({ onStart }: GameSelectScreenProps) {
               </div>
             </label>
           ))}
+        </div>
+      </div>
+
+      {/* スクロール速度 */}
+      <div className="theme-bg-card rounded-lg theme-shadow p-6 w-full max-w-md">
+        <h3 className="text-lg font-semibold mb-2 theme-text">スクロール速度</h3>
+        <div className="flex items-center gap-4">
+          <input
+            type="range"
+            min={0}
+            max={SCROLL_SPEED_OPTIONS.length - 1}
+            step={1}
+            value={SCROLL_SPEED_OPTIONS.findIndex((o) => o.value === scrollSpeed) !== -1
+              ? SCROLL_SPEED_OPTIONS.findIndex((o) => o.value === scrollSpeed)
+              : SCROLL_SPEED_OPTIONS.findIndex((o) => o.value >= scrollSpeed)}
+            onChange={(e) => {
+              const idx = Number(e.target.value)
+              setScrollSpeed(SCROLL_SPEED_OPTIONS[idx]!.value)
+            }}
+            className="flex-1 accent-[var(--color-primary)]"
+            data-testid="scroll-speed-slider"
+          />
+          <span className="text-sm font-medium theme-text min-w-[80px] text-center" data-testid="scroll-speed-label">
+            {currentSpeedLabel}
+          </span>
+        </div>
+        <div className="flex justify-between text-xs theme-text-muted mt-1">
+          <span>遅い</span>
+          <span>速い</span>
         </div>
       </div>
 

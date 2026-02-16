@@ -222,4 +222,134 @@ describe('GameEngine', () => {
     engine.start()
     expect(engine.status).toBe('playing')
   })
+
+  it('config getter が DifficultyConfig を返す', () => {
+    const score = createTestScore()
+    const engine = new GameEngine(score, 'beginner')
+    expect(engine.config.scrollSpeed).toBe(0.6)
+    expect(engine.config.judgementScale).toBe(1.5)
+    expect(engine.config.showFingering).toBe('always')
+    expect(engine.config.pitchMeterSize).toBe('large')
+    expect(engine.config.requireOrnaments).toBe(false)
+    expect(engine.config.allowedRegisters).toEqual(['ro'])
+  })
+
+  it('config getter が master の設定を返す', () => {
+    const score = createTestScore()
+    const engine = new GameEngine(score, 'master')
+    expect(engine.config.scrollSpeed).toBe(1.8)
+    expect(engine.config.pitchMeterSize).toBe('hidden')
+    expect(engine.config.requireOrnaments).toBe(true)
+    expect(engine.config.allowedRegisters).toEqual(['ro', 'kan', 'daikan'])
+  })
+})
+
+describe('GameEngine register restriction', () => {
+  it('beginner では甲音のノートが判定対象外になる', () => {
+    let score = createEmptyScore({
+      title: '音域テスト',
+      tempo: 120,
+      timeSignature: [4, 4],
+      measureCount: 1,
+    })
+    score = updateMeasure(score, 1, (m) => ({
+      ...m,
+      notes: [
+        createNoteEvent({
+          type: 'note',
+          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.26, midiNote: 76, western: 'E5' },
+          durationType: 'quarter',
+          startBeat: 0,
+        }),
+        createNoteEvent({
+          type: 'note',
+          pitch: { shinobueNumber: 1, register: 'kan', frequency: 1108.73, midiNote: 85, western: 'C#6' },
+          durationType: 'quarter',
+          startBeat: 1,
+        }),
+        createNoteEvent({
+          type: 'note',
+          pitch: { shinobueNumber: 1, register: 'daikan', frequency: 2217.46, midiNote: 97, western: 'C#7' },
+          durationType: 'quarter',
+          startBeat: 2,
+        }),
+      ],
+    }))
+
+    // beginner: allowedRegisters = ['ro']
+    const engine = new GameEngine(score, 'beginner')
+    // 呂音のみが判定対象
+    expect(engine.totalPlayableNotes).toBe(1)
+  })
+
+  it('intermediate では呂音+甲音が判定対象', () => {
+    let score = createEmptyScore({
+      title: '音域テスト',
+      tempo: 120,
+      timeSignature: [4, 4],
+      measureCount: 1,
+    })
+    score = updateMeasure(score, 1, (m) => ({
+      ...m,
+      notes: [
+        createNoteEvent({
+          type: 'note',
+          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.26, midiNote: 76, western: 'E5' },
+          durationType: 'quarter',
+          startBeat: 0,
+        }),
+        createNoteEvent({
+          type: 'note',
+          pitch: { shinobueNumber: 1, register: 'kan', frequency: 1108.73, midiNote: 85, western: 'C#6' },
+          durationType: 'quarter',
+          startBeat: 1,
+        }),
+        createNoteEvent({
+          type: 'note',
+          pitch: { shinobueNumber: 1, register: 'daikan', frequency: 2217.46, midiNote: 97, western: 'C#7' },
+          durationType: 'quarter',
+          startBeat: 2,
+        }),
+      ],
+    }))
+
+    const engine = new GameEngine(score, 'intermediate')
+    // 呂音 + 甲音が判定対象 (大甲は除外)
+    expect(engine.totalPlayableNotes).toBe(2)
+  })
+
+  it('advanced/master では全音域が判定対象', () => {
+    let score = createEmptyScore({
+      title: '音域テスト',
+      tempo: 120,
+      timeSignature: [4, 4],
+      measureCount: 1,
+    })
+    score = updateMeasure(score, 1, (m) => ({
+      ...m,
+      notes: [
+        createNoteEvent({
+          type: 'note',
+          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.26, midiNote: 76, western: 'E5' },
+          durationType: 'quarter',
+          startBeat: 0,
+        }),
+        createNoteEvent({
+          type: 'note',
+          pitch: { shinobueNumber: 1, register: 'kan', frequency: 1108.73, midiNote: 85, western: 'C#6' },
+          durationType: 'quarter',
+          startBeat: 1,
+        }),
+        createNoteEvent({
+          type: 'note',
+          pitch: { shinobueNumber: 1, register: 'daikan', frequency: 2217.46, midiNote: 97, western: 'C#7' },
+          durationType: 'quarter',
+          startBeat: 2,
+        }),
+      ],
+    }))
+
+    const engine = new GameEngine(score, 'advanced')
+    expect(engine.totalPlayableNotes).toBe(3)
+  })
 })

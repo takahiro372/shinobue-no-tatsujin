@@ -1,6 +1,8 @@
 import type { JudgementType, Difficulty } from './music'
 import type { ShinobueRegister } from './shinobue'
 
+export type PitchMeterSize = 'large' | 'small' | 'hidden'
+
 /** 判定結果 */
 export interface JudgementResult {
   type: JudgementType
@@ -62,8 +64,12 @@ export interface DifficultyConfig {
   judgementScale: number
   /** 運指ガイド表示 */
   showFingering: 'always' | 'next' | 'none'
-  /** 音程メーター表示 */
-  showPitchMeter: boolean
+  /** 音程メーター表示サイズ */
+  pitchMeterSize: PitchMeterSize
+  /** 装飾音を要求するか */
+  requireOrnaments: boolean
+  /** 使用を許可する音域 (これ以外の音符は自動パス) */
+  allowedRegisters: ShinobueRegister[]
 }
 
 export const DIFFICULTY_CONFIGS: Record<Difficulty, DifficultyConfig> = {
@@ -71,24 +77,32 @@ export const DIFFICULTY_CONFIGS: Record<Difficulty, DifficultyConfig> = {
     scrollSpeed: 0.6,
     judgementScale: 1.5,
     showFingering: 'always',
-    showPitchMeter: true,
+    pitchMeterSize: 'large',
+    requireOrnaments: false,
+    allowedRegisters: ['ro'],
   },
   intermediate: {
     scrollSpeed: 1.0,
     judgementScale: 1.0,
     showFingering: 'always',
-    showPitchMeter: true,
+    pitchMeterSize: 'large',
+    requireOrnaments: false,
+    allowedRegisters: ['ro', 'kan'],
   },
   advanced: {
     scrollSpeed: 1.4,
     judgementScale: 0.8,
     showFingering: 'next',
-    showPitchMeter: true,
+    pitchMeterSize: 'small',
+    requireOrnaments: true,
+    allowedRegisters: ['ro', 'kan', 'daikan'],
   },
   master: {
     scrollSpeed: 1.8,
     judgementScale: 0.6,
     showFingering: 'none',
-    showPitchMeter: false,
+    pitchMeterSize: 'hidden',
+    requireOrnaments: true,
+    allowedRegisters: ['ro', 'kan', 'daikan'],
   },
 }

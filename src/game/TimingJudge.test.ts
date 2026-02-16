@@ -83,7 +83,7 @@ describe('TimingJudge', () => {
 
 describe('TimingJudge with difficulty', () => {
   it('初心者 (scale 1.5) で判定が緩くなる', () => {
-    const judge = new TimingJudge({ judgementScale: 1.5, scrollSpeed: 1, showFingering: 'always', showPitchMeter: true })
+    const judge = new TimingJudge({ judgementScale: 1.5, scrollSpeed: 0.6, showFingering: 'always', pitchMeterSize: 'large', requireOrnaments: false, allowedRegisters: ['ro'] })
     // Perfect: ±45ms, ±15cents
     expect(judge.judge(40, 12, 'n1').type).toBe('perfect')
     // 通常なら Miss (timing 140ms) が Good になる
@@ -91,7 +91,7 @@ describe('TimingJudge with difficulty', () => {
   })
 
   it('達人 (scale 0.6) で判定が厳しくなる', () => {
-    const judge = new TimingJudge({ judgementScale: 0.6, scrollSpeed: 1, showFingering: 'none', showPitchMeter: false })
+    const judge = new TimingJudge({ judgementScale: 0.6, scrollSpeed: 1.8, showFingering: 'none', pitchMeterSize: 'hidden', requireOrnaments: true, allowedRegisters: ['ro', 'kan', 'daikan'] })
     // Perfect: ±18ms, ±6cents
     expect(judge.judge(20, 5, 'n1').type).toBe('great') // 通常ならPerfectだが達人ではGreat
     expect(judge.judge(10, 4, 'n1').type).toBe('perfect')

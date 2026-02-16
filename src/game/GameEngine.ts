@@ -60,8 +60,16 @@ export class GameEngine {
     return this.notes
   }
 
+  /** 難易度設定を取得 */
+  get config(): DifficultyConfig {
+    return this.diffConfig
+  }
+
   get totalPlayableNotes(): number {
-    return this.notes.filter((n) => n.frequency !== null).length
+    return this.notes.filter((n) =>
+      n.frequency !== null &&
+      (!n.register || this.diffConfig.allowedRegisters.includes(n.register)),
+    ).length
   }
 
   /** ゲームを開始 */
@@ -137,6 +145,13 @@ export class GameEngine {
         continue
       }
 
+      // 音域制限: 許可されていない音域のノートは自動パス
+      if (note.register && !this.diffConfig.allowedRegisters.includes(note.register)) {
+        note.judged = true
+        this.nextNoteIndex = i + 1
+        continue
+      }
+
       // 判定ウィンドウ内 + 音が出ている場合
       if (pitchResult && pitchResult.confidence >= 0.85 && this.judge.isInJudgementWindow(timingDelta)) {
         const pitchDelta = note.frequency
@@ -161,9 +176,13 @@ export class GameEngine {
 
   /** ゲームを終了 */
   private finish(): void {
-    // 未判定のノートを miss にする
+    // 未判定のノートを miss にする (音域外ノートは自動パス)
     for (const note of this.notes) {
       if (!note.judged && note.frequency !== null) {
+        if (note.register && !this.diffConfig.allowedRegisters.includes(note.register)) {
+          note.judged = true
+          continue
+        }
         this.applyJudgement(note, {
           type: 'miss',
           timingDelta: Infinity,

@@ -3,8 +3,11 @@ import type { ShinobueNote } from '../../types/shinobue'
 import type { NotePitch } from '../../score/ScoreModel'
 import { frequencyToMidiNote } from '../../utils/frequency'
 
+export type InputMode = 'overwrite' | 'append'
+
 interface NoteInputProps {
   shinobueKey: string
+  mode: InputMode
   onNoteSelect: (pitch: NotePitch) => void
   onRestSelect: () => void
 }
@@ -13,7 +16,7 @@ interface NoteInputProps {
  * 音符入力パネル
  * 篠笛の音を数字ボタン(0-7)とレジスタ切替で入力できる
  */
-export function NoteInput({ shinobueKey, onNoteSelect, onRestSelect }: NoteInputProps) {
+export function NoteInput({ shinobueKey, mode, onNoteSelect, onRestSelect }: NoteInputProps) {
   const chart = getFingeringChart(shinobueKey)
 
   const roNotes = chart.filter((n) => n.register === 'ro')
@@ -34,6 +37,18 @@ export function NoteInput({ shinobueKey, onNoteSelect, onRestSelect }: NoteInput
   return (
     <div className="bg-white rounded-lg shadow p-3 space-y-3">
       <h3 className="text-sm font-bold text-gray-600">音符入力</h3>
+
+      {/* モード表示 */}
+      <div
+        data-testid="input-mode-indicator"
+        className={`text-xs font-medium px-2 py-1 rounded text-center ${
+          mode === 'overwrite'
+            ? 'bg-[#C41E3A]/10 text-[#C41E3A]'
+            : 'bg-[#1B4F72]/10 text-[#1B4F72]'
+        }`}
+      >
+        {mode === 'overwrite' ? '上書きモード' : '追加モード'}
+      </div>
 
       {/* 呂音 */}
       <div>

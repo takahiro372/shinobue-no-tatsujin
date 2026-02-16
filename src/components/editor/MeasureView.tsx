@@ -30,7 +30,7 @@ export function MeasureView({
       <div className="flex gap-1 items-center min-h-[48px]">
         {measure.notes.length === 0 ? (
           <button
-            onClick={() => onEmptyClick(0)}
+            onClick={(e) => { e.stopPropagation(); onEmptyClick(0) }}
             className="w-full h-12 border-2 border-dashed border-gray-300 rounded text-gray-400 text-xs hover:border-[#C41E3A] hover:text-[#C41E3A] transition-colors"
           >
             +
@@ -81,7 +81,10 @@ function NoteCell({
 
   return (
     <button
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick()
+      }}
       onDoubleClick={(e) => {
         e.stopPropagation()
         onDelete()

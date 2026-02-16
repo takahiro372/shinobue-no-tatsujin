@@ -6,6 +6,7 @@ import { CountdownOverlay } from './CountdownOverlay'
 import { ResultScreen } from './ResultScreen'
 import { GameSelectScreen } from './GameSelectScreen'
 import type { GameResult, JudgementResult } from '../../types/game'
+import { DIFFICULTY_CONFIGS } from '../../types/game'
 
 // songStorage mock (IndexedDB is not available in test environment)
 vi.mock('../../utils/songStorage', () => ({
@@ -198,6 +199,58 @@ describe('ResultScreen', () => {
   })
 })
 
+// ── DIFFICULTY_CONFIGS ──
+
+describe('DIFFICULTY_CONFIGS', () => {
+  it('4つの難易度が定義されている', () => {
+    expect(Object.keys(DIFFICULTY_CONFIGS)).toHaveLength(4)
+    expect(DIFFICULTY_CONFIGS).toHaveProperty('beginner')
+    expect(DIFFICULTY_CONFIGS).toHaveProperty('intermediate')
+    expect(DIFFICULTY_CONFIGS).toHaveProperty('advanced')
+    expect(DIFFICULTY_CONFIGS).toHaveProperty('master')
+  })
+
+  it('スクロール速度が難易度順に増加する', () => {
+    expect(DIFFICULTY_CONFIGS.beginner.scrollSpeed).toBeLessThan(DIFFICULTY_CONFIGS.intermediate.scrollSpeed)
+    expect(DIFFICULTY_CONFIGS.intermediate.scrollSpeed).toBeLessThan(DIFFICULTY_CONFIGS.advanced.scrollSpeed)
+    expect(DIFFICULTY_CONFIGS.advanced.scrollSpeed).toBeLessThan(DIFFICULTY_CONFIGS.master.scrollSpeed)
+  })
+
+  it('判定倍率が難易度順に厳しくなる', () => {
+    expect(DIFFICULTY_CONFIGS.beginner.judgementScale).toBeGreaterThan(DIFFICULTY_CONFIGS.intermediate.judgementScale)
+    expect(DIFFICULTY_CONFIGS.intermediate.judgementScale).toBeGreaterThan(DIFFICULTY_CONFIGS.advanced.judgementScale)
+    expect(DIFFICULTY_CONFIGS.advanced.judgementScale).toBeGreaterThan(DIFFICULTY_CONFIGS.master.judgementScale)
+  })
+
+  it('運指ガイドが難易度で変化する', () => {
+    expect(DIFFICULTY_CONFIGS.beginner.showFingering).toBe('always')
+    expect(DIFFICULTY_CONFIGS.intermediate.showFingering).toBe('always')
+    expect(DIFFICULTY_CONFIGS.advanced.showFingering).toBe('next')
+    expect(DIFFICULTY_CONFIGS.master.showFingering).toBe('none')
+  })
+
+  it('音程メーターサイズが難易度で変化する', () => {
+    expect(DIFFICULTY_CONFIGS.beginner.pitchMeterSize).toBe('large')
+    expect(DIFFICULTY_CONFIGS.intermediate.pitchMeterSize).toBe('large')
+    expect(DIFFICULTY_CONFIGS.advanced.pitchMeterSize).toBe('small')
+    expect(DIFFICULTY_CONFIGS.master.pitchMeterSize).toBe('hidden')
+  })
+
+  it('装飾音要求が難易度で変化する', () => {
+    expect(DIFFICULTY_CONFIGS.beginner.requireOrnaments).toBe(false)
+    expect(DIFFICULTY_CONFIGS.intermediate.requireOrnaments).toBe(false)
+    expect(DIFFICULTY_CONFIGS.advanced.requireOrnaments).toBe(true)
+    expect(DIFFICULTY_CONFIGS.master.requireOrnaments).toBe(true)
+  })
+
+  it('音域制限が難易度で変化する', () => {
+    expect(DIFFICULTY_CONFIGS.beginner.allowedRegisters).toEqual(['ro'])
+    expect(DIFFICULTY_CONFIGS.intermediate.allowedRegisters).toEqual(['ro', 'kan'])
+    expect(DIFFICULTY_CONFIGS.advanced.allowedRegisters).toEqual(['ro', 'kan', 'daikan'])
+    expect(DIFFICULTY_CONFIGS.master.allowedRegisters).toEqual(['ro', 'kan', 'daikan'])
+  })
+})
+
 // ── GameSelectScreen ──
 
 const MOCK_MUSICXML = `<?xml version="1.0" encoding="UTF-8"?>
@@ -254,9 +307,10 @@ describe('GameSelectScreen', () => {
     })
     fireEvent.click(screen.getByTestId('start-game-button'))
     expect(onStart).toHaveBeenCalledTimes(1)
-    // score と difficulty が渡される
+    // score, difficulty, scrollSpeed が渡される
     expect(onStart.mock.calls[0]![0]).toHaveProperty('metadata')
-    expect(onStart.mock.calls[0]![1]).toBe('intermediate') // デフォルト
+    expect(onStart.mock.calls[0]![1]).toBe('intermediate') // デフォルト難易度
+    expect(onStart.mock.calls[0]![2]).toBe(1.0) // intermediate のデフォルト速度
   })
 
   it('難易度を変更してから開始できる', async () => {
@@ -271,5 +325,43 @@ describe('GameSelectScreen', () => {
     fireEvent.click(masterRadio)
     fireEvent.click(screen.getByTestId('start-game-button'))
     expect(onStart.mock.calls[0]![1]).toBe('master')
+    expect(onStart.mock.calls[0]![2]).toBe(1.8) // master のデフォルト速度
+  })
+
+  it('スクロール速度スライダーが表示される', () => {
+    render(<GameSelectScreen onStart={vi.fn()} />)
+    expect(screen.getByTestId('scroll-speed-slider')).toBeInTheDocument()
+    expect(screen.getByTestId('scroll-speed-label')).toBeInTheDocument()
+  })
+
+  it('スクロール速度を変更して開始できる', async () => {
+    const onStart = vi.fn()
+    render(<GameSelectScreen onStart={onStart} />)
+    await waitFor(() => {
+      expect(screen.getByTestId('start-game-button')).not.toBeDisabled()
+    })
+
+    // スライダーを「とても遅い」(index=0, value=0.4) に変更
+    const slider = screen.getByTestId('scroll-speed-slider')
+    fireEvent.change(slider, { target: { value: '0' } })
+    expect(screen.getByTestId('scroll-speed-label')).toHaveTextContent('とても遅い')
+
+    fireEvent.click(screen.getByTestId('start-game-button'))
+    expect(onStart.mock.calls[0]![2]).toBe(0.4)
+  })
+
+  it('難易度変更でスクロール速度が推奨値にリセットされる', async () => {
+    render(<GameSelectScreen onStart={vi.fn()} />)
+    await waitFor(() => {
+      expect(screen.getByTestId('start-game-button')).not.toBeDisabled()
+    })
+
+    // デフォルト(intermediate) → ふつう
+    expect(screen.getByTestId('scroll-speed-label')).toHaveTextContent('ふつう')
+
+    // 入門に変更 → 遅い (0.6)
+    const beginnerRadio = screen.getAllByRole('radio')[0]!
+    fireEvent.click(beginnerRadio)
+    expect(screen.getByTestId('scroll-speed-label')).toHaveTextContent('遅い')
   })
 })
