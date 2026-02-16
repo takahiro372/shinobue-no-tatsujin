@@ -20,6 +20,7 @@ describe('EditorToolbar', () => {
     onTitleChange: () => {},
     hasSelection: false,
     onDelete: () => {},
+    onTie: () => {},
     onSave: () => {},
     onSaveAs: () => {},
     onImport: () => {},
@@ -32,11 +33,13 @@ describe('EditorToolbar', () => {
     expect(input).toBeInTheDocument()
   })
 
-  it('音価ボタンが表示される', () => {
+  it('音価ボタンが表示される（四分・八分・十六のみ）', () => {
     render(<EditorToolbar {...defaultProps} />)
     expect(screen.getByText('四分')).toBeInTheDocument()
     expect(screen.getByText('八分')).toBeInTheDocument()
-    expect(screen.getByText('全')).toBeInTheDocument()
+    expect(screen.getByText('十六')).toBeInTheDocument()
+    expect(screen.queryByText('全')).not.toBeInTheDocument()
+    expect(screen.queryByText('二分')).not.toBeInTheDocument()
   })
 
   it('Undo/Redo ボタンが表示される', () => {
@@ -121,6 +124,24 @@ describe('EditorToolbar', () => {
     fireEvent.click(screen.getByTitle('MusicXMLファイルをインポート'))
     expect(onImport).toHaveBeenCalledOnce()
   })
+
+  it('伸ばしボタンが表示される', () => {
+    render(<EditorToolbar {...defaultProps} />)
+    expect(screen.getByTitle('伸ばし（タイ）を追加/解除 (T)')).toBeInTheDocument()
+  })
+
+  it('hasSelection=false の時、伸ばしボタンが無効', () => {
+    render(<EditorToolbar {...defaultProps} hasSelection={false} />)
+    const btn = screen.getByTitle('伸ばし（タイ）を追加/解除 (T)')
+    expect(btn).toBeDisabled()
+  })
+
+  it('伸ばしボタンクリックで onTie が呼ばれる', () => {
+    const onTie = vi.fn()
+    render(<EditorToolbar {...defaultProps} hasSelection={true} onTie={onTie} />)
+    fireEvent.click(screen.getByTitle('伸ばし（タイ）を追加/解除 (T)'))
+    expect(onTie).toHaveBeenCalledOnce()
+  })
 })
 
 describe('MeasureView', () => {
@@ -171,6 +192,26 @@ describe('MeasureView', () => {
     )
     const selectedBtn = container.querySelector('.ring-\\[\\#C41E3A\\]')
     expect(selectedBtn).not.toBeNull()
+  })
+
+  it('タイ音符が「～」で表示される', () => {
+    const measure: Measure = {
+      number: 1,
+      notes: [
+        { id: 'n1', type: 'note', pitch: { shinobueNumber: 3, register: 'ro', frequency: 659, midiNote: 64, western: 'E5' }, duration: { type: 'quarter', dots: 0 }, startBeat: 0 },
+        { id: 'n2', type: 'tie', duration: { type: 'quarter', dots: 0 }, startBeat: 1 },
+      ],
+    }
+    render(
+      <MeasureView
+        measure={measure}
+        selectedNoteId={null}
+        onNoteClick={() => {}}
+        onEmptyClick={() => {}}
+        onDeleteNote={() => {}}
+      />,
+    )
+    expect(screen.getByText('～')).toBeInTheDocument()
   })
 })
 

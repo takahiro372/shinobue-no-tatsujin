@@ -90,6 +90,37 @@ describe('scoreToGameNotes', () => {
     const notes = scoreToGameNotes(score)
     expect(notes[1]!.timeMs).toBeCloseTo(1000)
   })
+
+  it('タイ音符は直前の音と同じ frequency を持つ', () => {
+    let score = createEmptyScore({ tempo: 120, measureCount: 1 })
+    score = updateMeasure(score, 1, (m) => ({
+      ...m,
+      notes: [
+        createNoteEvent({
+          type: 'note',
+          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.26, midiNote: 76, western: 'E5' },
+          durationType: 'quarter',
+          startBeat: 0,
+        }),
+        createNoteEvent({
+          type: 'tie',
+          durationType: 'quarter',
+          startBeat: 1,
+        }),
+        createNoteEvent({
+          type: 'tie',
+          durationType: 'quarter',
+          startBeat: 2,
+        }),
+      ],
+    }))
+    const notes = scoreToGameNotes(score)
+    expect(notes[0]!.frequency).toBe(659.26)
+    expect(notes[1]!.frequency).toBe(659.26)
+    expect(notes[1]!.shinobueName).toBe('～')
+    expect(notes[2]!.frequency).toBe(659.26)
+    expect(notes[2]!.shinobueName).toBe('～')
+  })
 })
 
 describe('GameEngine', () => {

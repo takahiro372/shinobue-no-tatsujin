@@ -69,13 +69,15 @@ function NoteCell({
   // 音価に応じた幅
   const widthClass = beats >= 2 ? 'min-w-[48px]' : beats >= 1 ? 'min-w-[36px]' : 'min-w-[28px]'
 
-  const registerColor = note.pitch
-    ? note.pitch.register === 'ro'
-      ? 'text-[#1B4F72]'
-      : note.pitch.register === 'kan'
-        ? 'text-[#2D8B4E]'
-        : 'text-[#C41E3A]'
-    : 'text-gray-500'
+  const registerColor = note.type === 'tie'
+    ? 'text-[#6C3483]'
+    : note.pitch
+      ? note.pitch.register === 'ro'
+        ? 'text-[#1B4F72]'
+        : note.pitch.register === 'kan'
+          ? 'text-[#2D8B4E]'
+          : 'text-[#C41E3A]'
+      : 'text-gray-500'
 
   return (
     <button

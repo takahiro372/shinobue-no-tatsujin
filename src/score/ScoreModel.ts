@@ -28,7 +28,7 @@ export type BarlineType = 'normal' | 'double' | 'final' | 'repeat-start' | 'repe
 
 export interface NoteEvent {
   id: string
-  type: 'note' | 'rest'
+  type: 'note' | 'rest' | 'tie'
   pitch?: NotePitch
   duration: NoteDuration
   startBeat: number
@@ -222,7 +222,7 @@ export function totalDurationSeconds(score: Score): number {
 
 /** 音符のNoteEventを作成するヘルパー */
 export function createNoteEvent(options: {
-  type?: 'note' | 'rest'
+  type?: 'note' | 'rest' | 'tie'
   pitch?: NotePitch
   durationType?: DurationType
   dots?: number

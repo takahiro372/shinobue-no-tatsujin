@@ -82,6 +82,16 @@ describe('noteEventToSujiText', () => {
     expect(noteEventToSujiText(event)).toBe('▼')
   })
 
+  it('タイ → "～"', () => {
+    const event: NoteEvent = {
+      id: '3',
+      type: 'tie',
+      duration: { type: 'quarter', dots: 0 },
+      startBeat: 1,
+    }
+    expect(noteEventToSujiText(event)).toBe('～')
+  })
+
   it('ピッチ付き音符を正しく変換', () => {
     const event: NoteEvent = {
       id: '2',

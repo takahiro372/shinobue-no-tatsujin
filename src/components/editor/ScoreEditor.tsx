@@ -31,6 +31,10 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
   const editor = useScoreEditor(initialScore)
   const prevScoreRef = useRef(editor.score)
 
+  // キーボードハンドラ用: 最新の editor 状態を ref で保持
+  const editorRef = useRef(editor)
+  editorRef.current = editor
+
   // ライブラリ
   const [songs, setSongs] = useState<SavedSong[]>([])
   const [showLibrary, setShowLibrary] = useState(false)
@@ -58,47 +62,6 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
   }, [editor.isDirty])
-
-  // キーボードショートカット
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      // Undo: Ctrl+Z
-      if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
-        e.preventDefault()
-        editor.undo()
-      }
-      // Redo: Ctrl+Y or Ctrl+Shift+Z
-      if ((e.ctrlKey && e.key === 'y') || (e.ctrlKey && e.shiftKey && e.key === 'z')) {
-        e.preventDefault()
-        editor.redo()
-      }
-      // Save: Ctrl+S
-      if (e.ctrlKey && e.key === 's') {
-        e.preventDefault()
-        handleSave()
-      }
-      // Delete selected note
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (editor.selectedNoteId) {
-          e.preventDefault()
-          editor.deleteNote(editor.selectedMeasure, editor.selectedNoteId)
-        }
-      }
-      // Duration shortcuts
-      const durationMap: Record<string, DurationType> = {
-        '1': 'whole',
-        '2': 'half',
-        '4': 'quarter',
-        '8': 'eighth',
-        '6': 'sixteenth',
-      }
-      if (!e.ctrlKey && !e.altKey && durationMap[e.key]) {
-        handleDurationChange(durationMap[e.key]!)
-      }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [editor])
 
   // 音符入力: 選択中なら差し替え、選択中でなければ末尾追加
   const handleNoteSelect = useCallback((pitch: NotePitch) => {
@@ -132,10 +95,19 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
 
   // 削除ボタン
   const handleDelete = useCallback(() => {
-    if (editor.selectedNoteId) {
-      editor.deleteNote(editor.selectedMeasure, editor.selectedNoteId)
+    const ed = editorRef.current
+    if (ed.selectedNoteId) {
+      ed.deleteNote(ed.selectedMeasure, ed.selectedNoteId)
     }
-  }, [editor])
+  }, [])
+
+  // 伸ばし（タイ）トグル
+  const handleTie = useCallback(() => {
+    const ed = editorRef.current
+    if (ed.selectedNoteId) {
+      ed.toggleTie(ed.selectedMeasure, ed.selectedNoteId)
+    }
+  }, [])
 
   // 保存
   const handleSave = useCallback(async () => {
@@ -237,6 +209,58 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
     }
   }, [showLibrary, refreshLibrary])
 
+  // キーボードショートカット (ref 経由で最新状態を参照し、安定したリスナーを保つ)
+  const handleSaveRef = useRef(handleSave)
+  handleSaveRef.current = handleSave
+  const handleDurationChangeRef = useRef(handleDurationChange)
+  handleDurationChangeRef.current = handleDurationChange
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const ed = editorRef.current
+      // Undo: Ctrl+Z
+      if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        ed.undo()
+      }
+      // Redo: Ctrl+Y or Ctrl+Shift+Z
+      if ((e.ctrlKey && e.key === 'y') || (e.ctrlKey && e.shiftKey && e.key === 'z')) {
+        e.preventDefault()
+        ed.redo()
+      }
+      // Save: Ctrl+S
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault()
+        handleSaveRef.current()
+      }
+      // Delete selected note
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (ed.selectedNoteId) {
+          e.preventDefault()
+          ed.deleteNote(ed.selectedMeasure, ed.selectedNoteId)
+        }
+      }
+      // Tie: T key
+      if (!e.ctrlKey && !e.altKey && (e.key === 't' || e.key === 'T')) {
+        if (ed.selectedNoteId) {
+          e.preventDefault()
+          ed.toggleTie(ed.selectedMeasure, ed.selectedNoteId)
+        }
+      }
+      // Duration shortcuts
+      const durationMap: Record<string, DurationType> = {
+        '4': 'quarter',
+        '8': 'eighth',
+        '6': 'sixteenth',
+      }
+      if (!e.ctrlKey && !e.altKey && durationMap[e.key]) {
+        handleDurationChangeRef.current(durationMap[e.key]!)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
   return (
     <div className="space-y-4">
       {/* 隠しファイル入力 */}
@@ -263,6 +287,7 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
         onTitleChange={(title) => editor.updateMetadata({ title })}
         hasSelection={editor.selectedNoteId !== null}
         onDelete={handleDelete}
+        onTie={handleTie}
         onSave={handleSave}
         onSaveAs={handleSaveAs}
         onImport={handleImport}

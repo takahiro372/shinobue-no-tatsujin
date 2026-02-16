@@ -14,6 +14,7 @@ interface EditorToolbarProps {
   onTitleChange: (title: string) => void
   hasSelection: boolean
   onDelete: () => void
+  onTie: () => void
   onSave: () => void
   onSaveAs: () => void
   onImport: () => void
@@ -21,8 +22,6 @@ interface EditorToolbarProps {
 }
 
 const DURATIONS: { type: DurationType; label: string; shortcut: string }[] = [
-  { type: 'whole', label: '全', shortcut: '1' },
-  { type: 'half', label: '二分', shortcut: '2' },
   { type: 'quarter', label: '四分', shortcut: '4' },
   { type: 'eighth', label: '八分', shortcut: '8' },
   { type: 'sixteenth', label: '十六', shortcut: '6' },
@@ -42,6 +41,7 @@ export function EditorToolbar({
   onTitleChange,
   hasSelection,
   onDelete,
+  onTie,
   onSave,
   onSaveAs,
   onImport,
@@ -109,8 +109,8 @@ export function EditorToolbar({
         </button>
       </div>
 
-      {/* 削除 */}
-      <div className="border-l pl-3">
+      {/* 削除 / 伸ばし */}
+      <div className="flex gap-1 border-l pl-3">
         <button
           onClick={onDelete}
           disabled={!hasSelection}
@@ -118,6 +118,14 @@ export function EditorToolbar({
           title="選択中の音符を削除 (Delete)"
         >
           🗑 削除
+        </button>
+        <button
+          onClick={onTie}
+          disabled={!hasSelection}
+          className="px-2 py-1 text-xs rounded bg-gray-100 hover:bg-blue-100 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors font-bold"
+          title="伸ばし（タイ）を追加/解除 (T)"
+        >
+          ～ 伸
         </button>
       </div>
 

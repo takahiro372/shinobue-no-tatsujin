@@ -9,6 +9,7 @@ import type { ShinobueRegister } from '../types/shinobue'
  * - 甲音: アラビア数字 (1, 2, 3...)
  * - 大甲: 大+アラビア数字 (大1, 大2, 大3...)
  * - 休符: 「▼」
+ * - 伸ばし（タイ）: 「～」
  * - 付点: 数字の右下に「.」
  * - 八分音符: 数字の下に線1本
  * - 十六分音符: 数字の下に線2本
@@ -36,6 +37,7 @@ export function noteToSujiText(pitch: NotePitch): string {
 /** NoteEvent を数字譜テキストに変換 */
 export function noteEventToSujiText(event: NoteEvent): string {
   if (event.type === 'rest') return '▼'
+  if (event.type === 'tie') return '～'
   if (!event.pitch) return '？'
   return noteToSujiText(event.pitch)
 }
@@ -88,6 +90,14 @@ export function renderSujiNote(
     ctx.font = `${fontSize}px "Noto Serif JP", serif`
     ctx.fillStyle = activeColor
     ctx.fillText('▼', cx, cy)
+    ctx.restore()
+    return
+  }
+
+  if (event.type === 'tie') {
+    ctx.font = `${fontSize}px "Noto Serif JP", serif`
+    ctx.fillStyle = activeColor
+    ctx.fillText('～', cx, cy)
     ctx.restore()
     return
   }

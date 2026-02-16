@@ -7,9 +7,10 @@ import {
   appendMeasure,
   removeMeasure,
   createNoteEvent,
+  generateNoteId,
 } from '../score/ScoreModel'
 import type { DurationType } from '../types/music'
-import type { NotePitch } from '../score/ScoreModel'
+import type { NotePitch, NoteEvent } from '../score/ScoreModel'
 
 const MAX_UNDO = 50
 
@@ -81,23 +82,24 @@ export function useScoreEditor(initialScore?: Score) {
     return note.id
   }, [score, currentDuration, pushUndo])
 
-  /** 音符を削除（休符で置換） */
+  /** 音符を完全に削除し、後続の音符を前に詰める */
   const deleteNote = useCallback((measureNumber: number, noteId: string) => {
     pushUndo(score)
-    const updated = updateMeasure(score, measureNumber, (m) => ({
-      ...m,
-      notes: m.notes.map((n) =>
-        n.id === noteId
-          ? { ...n, type: 'rest' as const, pitch: undefined }
-          : n,
-      ),
-    }))
+    const updated = updateMeasure(score, measureNumber, (m) => {
+      const filtered = m.notes.filter((n) => n.id !== noteId)
+      // startBeat を詰め直す
+      let beat = 0
+      const reindexed = filtered.map((n) => {
+        const updated = { ...n, startBeat: beat }
+        beat += 1
+        return updated
+      })
+      return { ...m, notes: reindexed }
+    })
     setScore(updated)
-    if (selectedNoteId === noteId) {
-      setSelectedNoteId(null)
-    }
+    setSelectedNoteId(null)
     setIsDirty(true)
-  }, [score, selectedNoteId, pushUndo])
+  }, [score, pushUndo])
 
   /** 選択中の音符を別の音に差し替え */
   const replaceNote = useCallback((
@@ -133,6 +135,54 @@ export function useScoreEditor(initialScore?: Score) {
     setScore(updated)
     setIsDirty(true)
   }, [score, pushUndo])
+
+  /** タイ（伸ばし）をトグル: 選択中の音符の直後にタイを追加、または直後のタイを削除 */
+  const toggleTie = useCallback((measureNumber: number, noteId: string) => {
+    const measure = score.measures.find((m) => m.number === measureNumber)
+    if (!measure) return
+
+    const noteIndex = measure.notes.findIndex((n) => n.id === noteId)
+    if (noteIndex === -1) return
+
+    const targetNote = measure.notes[noteIndex]!
+    // タイは音符にしか付けられない（休符やタイ自体にはNG）
+    if (targetNote.type !== 'note') return
+
+    const nextNote = measure.notes[noteIndex + 1]
+
+    pushUndo(score)
+
+    if (nextNote && nextNote.type === 'tie') {
+      // 直後がタイなら削除して詰める
+      const filtered = measure.notes.filter((n) => n.id !== nextNote.id)
+      let beat = 0
+      const reindexed = filtered.map((n) => {
+        const updated = { ...n, startBeat: beat }
+        beat += 1
+        return updated
+      })
+      setScore(updateMeasure(score, measureNumber, (m) => ({ ...m, notes: reindexed })))
+    } else {
+      // タイを追加（選択中音符の直後に挿入）
+      const tieNote: NoteEvent = {
+        id: generateNoteId(),
+        type: 'tie',
+        duration: { type: currentDuration, dots: 0 },
+        startBeat: targetNote.startBeat + 1,
+      }
+      const newNotes = [...measure.notes]
+      newNotes.splice(noteIndex + 1, 0, tieNote)
+      // startBeat を詰め直す
+      let beat = 0
+      const reindexed = newNotes.map((n) => {
+        const updated = { ...n, startBeat: beat }
+        beat += 1
+        return updated
+      })
+      setScore(updateMeasure(score, measureNumber, (m) => ({ ...m, notes: reindexed })))
+    }
+    setIsDirty(true)
+  }, [score, currentDuration, pushUndo])
 
   /** 小節を末尾に追加 */
   const addMeasure = useCallback(() => {
@@ -194,6 +244,7 @@ export function useScoreEditor(initialScore?: Score) {
     deleteNote,
     replaceNote,
     changeDuration,
+    toggleTie,
     addMeasure,
     deleteMeasure,
     updateMetadata,

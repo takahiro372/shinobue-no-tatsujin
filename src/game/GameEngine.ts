@@ -230,6 +230,9 @@ export function scoreToGameNotes(score: Score): GameNote[] {
   const bpMeasure = beatsPerMeasure(score.metadata.timeSignature)
   const notes: GameNote[] = []
 
+  // 直前の音符ピッチを追跡（タイ用）
+  let lastPitch: { frequency: number; midiNote: number; shinobueNumber: number; register: import('../types/shinobue').ShinobueRegister; western: string } | null = null
+
   for (const measure of score.measures) {
     const measureOffsetBeats = (measure.number - 1) * bpMeasure
 
@@ -240,7 +243,37 @@ export function scoreToGameNotes(score: Score): GameNote[] {
       const timeMs = startBeat * msPerBeat
       const durationMs = durationBeats * msPerBeat
 
+      if (noteEvent.type === 'tie' && lastPitch) {
+        // タイ: 直前の音符と同じピッチを維持
+        notes.push({
+          id: noteEvent.id,
+          timeMs,
+          durationMs,
+          frequency: lastPitch.frequency,
+          midiNote: lastPitch.midiNote,
+          shinobueNumber: lastPitch.shinobueNumber,
+          register: lastPitch.register,
+          western: lastPitch.western,
+          shinobueName: '～',
+          judgement: null,
+          judged: false,
+        })
+        continue
+      }
+
       const isRest = noteEvent.type === 'rest' || !noteEvent.pitch
+
+      if (!isRest && noteEvent.pitch) {
+        lastPitch = {
+          frequency: noteEvent.pitch.frequency,
+          midiNote: noteEvent.pitch.midiNote,
+          shinobueNumber: noteEvent.pitch.shinobueNumber,
+          register: noteEvent.pitch.register,
+          western: noteEvent.pitch.western,
+        }
+      } else {
+        lastPitch = null
+      }
 
       notes.push({
         id: noteEvent.id,
