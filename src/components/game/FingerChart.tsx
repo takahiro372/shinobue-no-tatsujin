@@ -77,7 +77,7 @@ export function FingeringDiagram({ fingering, size = 'sm' }: {
           key={i}
           className={`${holeSize} rounded-full border-2 ${
             closed
-              ? 'bg-[var(--color-text)] border-[var(--color-text)]'
+              ? 'bg-[#2D8B4E] border-[#2D8B4E]'
               : 'theme-bg-card border-gray-400'
           }`}
           aria-label={`${i + 1}穴: ${closed ? '閉' : '開'}`}
