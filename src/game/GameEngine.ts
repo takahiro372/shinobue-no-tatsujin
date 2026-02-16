@@ -108,11 +108,18 @@ export class GameEngine {
    * フレーム更新 (requestAnimationFrame から呼ぶ)
    *
    * @param pitchResult 現在の音程検出結果 (null = 無音)
+   * @returns true if the game just finished (caller should stop RAF loop)
    */
-  update(pitchResult: PitchResult | null): void {
-    if (this._status !== 'playing') return
+  update(pitchResult: PitchResult | null): boolean {
+    if (this._status !== 'playing') return false
 
     this._currentTimeMs = performance.now() - this.startTimeMs
+
+    // ノートが無い場合は即終了
+    if (this.notes.length === 0) {
+      this.finish()
+      return true
+    }
 
     // 未判定ノートをチェック
     for (let i = this.nextNoteIndex; i < this.notes.length; i++) {
@@ -166,16 +173,20 @@ export class GameEngine {
     }
 
     // 全ノート判定済みならゲーム終了
-    const lastNote = this.notes[this.notes.length - 1]
-    if (lastNote && this._currentTimeMs > lastNote.timeMs + lastNote.durationMs + 1000) {
+    const lastNote = this.notes[this.notes.length - 1]!
+    if (this._currentTimeMs > lastNote.timeMs + lastNote.durationMs + 1000) {
       this.finish()
+      return true
     }
 
     this.emitState()
+    return false
   }
 
   /** ゲームを終了 */
   private finish(): void {
+    if (this._status === 'finished') return
+
     // 未判定のノートを miss にする (音域外ノートは自動パス)
     for (const note of this.notes) {
       if (!note.judged && note.frequency !== null) {

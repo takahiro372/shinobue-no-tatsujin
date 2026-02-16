@@ -59,8 +59,8 @@ export function GameScreen({ score, difficulty, scrollSpeed, pitchResult, onBack
       onJudgement: (judgement, _score, _combo) => {
         setLastJudgement({ ...judgement })
       },
-      onFinish: (result) => {
-        setResult(result)
+      onFinish: (r) => {
+        setResult(r)
         setPhase('result')
       },
       onStateChange: (state) => {
@@ -80,8 +80,11 @@ export function GameScreen({ score, difficulty, scrollSpeed, pitchResult, onBack
     const engine = engineRef.current
     if (!engine || engine.status !== 'playing') return
 
-    engine.update(pitchRef.current)
-    rafRef.current = requestAnimationFrame(gameLoop)
+    const finished = engine.update(pitchRef.current)
+    // ゲーム終了時は RAF を停止
+    if (!finished) {
+      rafRef.current = requestAnimationFrame(gameLoop)
+    }
   }, [])
 
   // カウントダウン完了 → ゲーム開始
@@ -167,6 +170,10 @@ export function GameScreen({ score, difficulty, scrollSpeed, pitchResult, onBack
   const centOffset = pitchResult?.centOffset ?? 0
   const isPitchActive = !!pitchResult && pitchResult.confidence >= 0.5
 
+  const showFingering = diffConfig.showFingering !== 'none'
+  const showPitchMeter = diffConfig.pitchMeterSize !== 'hidden'
+  const showBottomPanel = showFingering || showPitchMeter
+
   return (
     <div className="relative bg-[#1A1A1A] rounded-lg overflow-hidden">
       {/* スコアボード */}
@@ -196,73 +203,70 @@ export function GameScreen({ score, difficulty, scrollSpeed, pitchResult, onBack
         </div>
       </div>
 
-      {/* メインエリア: ハイウェイ + サイドパネル */}
-      <div className="flex">
-        {/* ノートハイウェイ */}
-        <div className="relative flex-1">
-          <NoteHighway
-            notes={notes}
-            currentTimeMs={currentTime}
-            scrollSpeed={scrollSpeed}
-            width={diffConfig.showFingering !== 'none' ? 640 : 800}
-            height={300}
-          />
+      {/* ノートハイウェイ (全幅) */}
+      <div className="relative">
+        <NoteHighway
+          notes={notes}
+          currentTimeMs={currentTime}
+          scrollSpeed={scrollSpeed}
+          height={300}
+        />
 
-          {/* 判定表示 */}
-          <JudgementDisplay judgement={lastJudgement} />
+        {/* 判定表示 */}
+        <JudgementDisplay judgement={lastJudgement} />
 
-          {/* カウントダウン */}
-          {phase === 'countdown' && (
-            <CountdownOverlay onComplete={handleCountdownComplete} />
-          )}
+        {/* カウントダウン */}
+        {phase === 'countdown' && (
+          <CountdownOverlay onComplete={handleCountdownComplete} />
+        )}
 
-          {/* 一時停止オーバーレイ */}
-          {phase === 'paused' && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-              <span className="text-4xl font-bold text-white">一時停止</span>
-            </div>
-          )}
-        </div>
-
-        {/* サイドパネル: 運指ガイド + 音程メーター */}
-        {(diffConfig.showFingering !== 'none' || diffConfig.pitchMeterSize !== 'hidden') && (
-          <div
-            className="w-40 border-l border-white/10 p-3 flex flex-col items-center gap-3"
-            data-testid="game-side-panel"
-          >
-            {/* 運指ガイド */}
-            {diffConfig.showFingering !== 'none' && (
-              <div className="text-center" data-testid="game-fingering-guide">
-                <div className="text-xs text-white/50 mb-1">運指</div>
-                {activeFingeringNote ? (
-                  <>
-                    <div className="text-lg font-bold text-white mb-2">
-                      {activeFingeringNote.name}
-                    </div>
-                    <FingeringDiagram fingering={activeFingeringNote.fingering} size="lg" />
-                    <div className="text-xs text-white/40 mt-1">
-                      {activeFingeringNote.western}
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-sm text-white/30">---</div>
-                )}
-              </div>
-            )}
-
-            {/* 音程メーター */}
-            {diffConfig.pitchMeterSize !== 'hidden' && (
-              <div
-                className={diffConfig.pitchMeterSize === 'large' ? 'w-full' : 'w-24'}
-                data-testid="game-pitch-meter"
-              >
-                <div className="text-xs text-white/50 mb-1 text-center">音程</div>
-                <PitchMeter centOffset={centOffset} isActive={isPitchActive} />
-              </div>
-            )}
+        {/* 一時停止オーバーレイ */}
+        {phase === 'paused' && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+            <span className="text-4xl font-bold text-white">一時停止</span>
           </div>
         )}
       </div>
+
+      {/* 下部パネル: 運指ガイド + 音程メーター */}
+      {showBottomPanel && (
+        <div
+          className="border-t border-white/10 px-6 py-3 flex items-center justify-center gap-8"
+          data-testid="game-bottom-panel"
+        >
+          {/* 運指ガイド */}
+          {showFingering && (
+            <div className="flex items-center gap-4" data-testid="game-fingering-guide">
+              {activeFingeringNote ? (
+                <>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-white">
+                      {activeFingeringNote.name}
+                    </div>
+                    <div className="text-xs text-white/40">
+                      {activeFingeringNote.western}
+                    </div>
+                  </div>
+                  <FingeringDiagram fingering={activeFingeringNote.fingering} size="lg" />
+                </>
+              ) : (
+                <div className="text-sm text-white/30">---</div>
+              )}
+            </div>
+          )}
+
+          {/* 音程メーター */}
+          {showPitchMeter && (
+            <div
+              className={diffConfig.pitchMeterSize === 'large' ? 'w-64' : 'w-40'}
+              data-testid="game-pitch-meter"
+            >
+              <div className="text-xs text-white/50 mb-1 text-center">音程</div>
+              <PitchMeter centOffset={centOffset} isActive={isPitchActive} />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

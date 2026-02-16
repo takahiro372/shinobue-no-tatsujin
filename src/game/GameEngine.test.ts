@@ -242,6 +242,68 @@ describe('GameEngine', () => {
     expect(engine.config.requireOrnaments).toBe(true)
     expect(engine.config.allowedRegisters).toEqual(['ro', 'kan', 'daikan'])
   })
+
+  it('update() はゲーム終了時に true を返す', () => {
+    const onFinish = vi.fn()
+    const score = createEmptyScore({ tempo: 120, measureCount: 1 })
+    const engine = new GameEngine(score, 'intermediate', { onFinish })
+    engine.start()
+
+    // performance.now ベースなのでモック時間で制御できないが、
+    // ノートが空の場合に即終了するケースをテスト
+    // 空ノートスコアを作成
+    const emptyScore = updateMeasure(
+      createEmptyScore({ tempo: 120, measureCount: 1 }),
+      1,
+      (m) => ({ ...m, notes: [] }),
+    )
+    const engine2 = new GameEngine(emptyScore, 'intermediate', { onFinish })
+    engine2.start()
+    const result = engine2.update(null)
+    expect(result).toBe(true)
+    expect(engine2.status).toBe('finished')
+    expect(onFinish).toHaveBeenCalledTimes(1)
+  })
+
+  it('update() は通常時に false を返す', () => {
+    const score = createTestScore()
+    const engine = new GameEngine(score, 'intermediate')
+    engine.start()
+    const result = engine.update(null)
+    expect(result).toBe(false)
+  })
+
+  it('空のノートでゲームが即終了し onFinish が呼ばれる', () => {
+    const onFinish = vi.fn()
+    const emptyScore = updateMeasure(
+      createEmptyScore({ tempo: 120, measureCount: 1 }),
+      1,
+      (m) => ({ ...m, notes: [] }),
+    )
+    const engine = new GameEngine(emptyScore, 'intermediate', { onFinish })
+    engine.start()
+    engine.update(null)
+    expect(engine.status).toBe('finished')
+    expect(onFinish).toHaveBeenCalledTimes(1)
+    const gameResult = onFinish.mock.calls[0]![0]
+    expect(gameResult.totalNotes).toBe(0)
+    expect(gameResult.accuracy).toBe(0)
+    expect(gameResult.rank).toBe('D')
+  })
+
+  it('finish() が二重呼び出しされても安全', () => {
+    const onFinish = vi.fn()
+    const emptyScore = updateMeasure(
+      createEmptyScore({ tempo: 120, measureCount: 1 }),
+      1,
+      (m) => ({ ...m, notes: [] }),
+    )
+    const engine = new GameEngine(emptyScore, 'intermediate', { onFinish })
+    engine.start()
+    engine.update(null) // finish が呼ばれる
+    engine.update(null) // status が 'finished' なので何もしない
+    expect(onFinish).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('GameEngine register restriction', () => {

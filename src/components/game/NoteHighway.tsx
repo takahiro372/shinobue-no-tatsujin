@@ -202,7 +202,7 @@ export function NoteHighway({
       ref={canvasRef}
       width={width}
       height={height}
-      className="block rounded-lg"
+      className="block w-full"
       style={{ background: COLORS.bg }}
     />
   )

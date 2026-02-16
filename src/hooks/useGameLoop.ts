@@ -56,8 +56,10 @@ export function useGameLoop({
     const engine = engineRef.current
     if (!engine || engine.status !== 'playing') return
 
-    engine.update(pitchRef.current)
-    rafRef.current = requestAnimationFrame(loop)
+    const finished = engine.update(pitchRef.current)
+    if (!finished) {
+      rafRef.current = requestAnimationFrame(loop)
+    }
   }, [])
 
   const start = useCallback(() => {
