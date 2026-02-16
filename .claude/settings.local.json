@@ -10,7 +10,8 @@
       "Bash(npx vitest:*)",
       "Bash(npx tsc:*)",
       "Bash(npx vite build)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(npm test:*)"
     ]
   }
 }

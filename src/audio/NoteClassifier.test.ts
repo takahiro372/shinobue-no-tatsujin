@@ -118,6 +118,14 @@ describe('NoteClassifier（八本調子）', () => {
     expect(result).not.toBeNull()
     expect(result!.shinobueNote.name).toBe('筒音')
     expect(result!.shinobueNote.frequency).toBe(523.25)
+    expect(result!.shinobueNote.western).toBe('C5')
+  })
+
+  it('D5 (587.33Hz) → 一（呂）', () => {
+    const result = classifier.classify(587.33, 0.95)
+    expect(result).not.toBeNull()
+    expect(result!.shinobueNote.name).toBe('一')
+    expect(result!.shinobueNote.western).toBe('D5')
   })
 
   it('E5 (659.25Hz) → 二（呂）', () => {
@@ -125,6 +133,20 @@ describe('NoteClassifier（八本調子）', () => {
     expect(result).not.toBeNull()
     expect(result!.shinobueNote.name).toBe('二')
     expect(result!.shinobueNote.western).toBe('E5')
+  })
+
+  it('F5 (698.46Hz) → 三（呂）', () => {
+    const result = classifier.classify(698.46, 0.95)
+    expect(result).not.toBeNull()
+    expect(result!.shinobueNote.name).toBe('三')
+    expect(result!.shinobueNote.western).toBe('F5')
+  })
+
+  it('G5 (783.99Hz) → 四（呂）', () => {
+    const result = classifier.classify(783.99, 0.95)
+    expect(result).not.toBeNull()
+    expect(result!.shinobueNote.name).toBe('四')
+    expect(result!.shinobueNote.western).toBe('G5')
   })
 
   it('A5 (880Hz) → 五（呂）', () => {
@@ -139,6 +161,27 @@ describe('NoteClassifier（八本調子）', () => {
     expect(result).not.toBeNull()
     expect(result!.shinobueNote.name).toBe('六')
     expect(result!.shinobueNote.western).toBe('B5')
+  })
+
+  it('C6 (1046.50Hz) → 七（呂）', () => {
+    const result = classifier.classify(1046.50, 0.95)
+    expect(result).not.toBeNull()
+    expect(result!.shinobueNote.name).toBe('七')
+    expect(result!.shinobueNote.western).toBe('C6')
+  })
+
+  it('findNearest でも C6 → 七 を返す', () => {
+    const result = classifier.findNearest(1046.50)
+    expect(result).not.toBeNull()
+    expect(result!.note.name).toBe('七')
+    expect(Math.abs(result!.centOffset)).toBeLessThan(1)
+  })
+
+  it('findNearest でも B5 → 六 を返す', () => {
+    const result = classifier.findNearest(987.77)
+    expect(result).not.toBeNull()
+    expect(result!.note.name).toBe('六')
+    expect(Math.abs(result!.centOffset)).toBeLessThan(1)
   })
 
   it('全ての運指表エントリに対して正確にマッピングする', () => {
