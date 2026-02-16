@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap');
+@import "tailwindcss";
+
+/* ── Theme CSS Custom Properties ── */
+
+:root {
+  /* Default = light theme */
+  --color-primary: #C41E3A;
+  --color-secondary: #1B4F72;
+  --color-accent: #C5A332;
+  --color-bg: #F5F0E8;
+  --color-bg-card: #ffffff;
+  --color-bg-nav: #ffffff;
+  --color-text: #2C2C2C;
+  --color-text-muted: #6b7280;
+  --color-text-light: #9ca3af;
+  --color-success: #2D8B4E;
+  --color-warning: #D4A017;
+  --color-error: #B22222;
+  --color-border: rgba(196, 30, 58, 0.2);
+  --color-header-bg: #C41E3A;
+  --color-header-text: #ffffff;
+  --font-serif: 'Noto Serif JP', serif;
+  --font-sans: 'Noto Sans JP', sans-serif;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Dark theme ── */
+[data-theme="dark"] {
+  --color-primary: #E8475D;
+  --color-secondary: #5BA3D9;
+  --color-accent: #D4B44C;
+  --color-bg: #1A1A1A;
+  --color-bg-card: #2A2A2A;
+  --color-bg-nav: #222222;
+  --color-text: #E8E0D4;
+  --color-text-muted: #9ca3af;
+  --color-text-light: #6b7280;
+  --color-success: #4CAF7A;
+  --color-warning: #E4B427;
+  --color-error: #E05252;
+  --color-border: rgba(232, 71, 93, 0.3);
+  --color-header-bg: #2A1015;
+  --color-header-text: #E8E0D4;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Traditional (和風) theme ── */
+[data-theme="traditional"] {
+  --color-primary: #8B2500;
+  --color-secondary: #264348;
+  --color-accent: #B8860B;
+  --color-bg: #F5EFDC;
+  --color-bg-card: #FAF6EB;
+  --color-bg-nav: #F0E8D0;
+  --color-text: #333028;
+  --color-text-muted: #706B5F;
+  --color-text-light: #A09882;
+  --color-success: #3A6B35;
+  --color-warning: #C49000;
+  --color-error: #8B0000;
+  --color-border: rgba(139, 37, 0, 0.2);
+  --color-header-bg: #3C1518;
+  --color-header-text: #F5EFDC;
+  --shadow-card: 0 1px 4px rgba(60, 21, 24, 0.12);
+  --shadow-lg: 0 8px 16px rgba(60, 21, 24, 0.15);
+}
+
+/* ── Base styles ── */
+
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-serif);
+}
+
+/* ── Theme utility classes ── */
+
+.theme-bg { background-color: var(--color-bg); }
+.theme-bg-card { background-color: var(--color-bg-card); }
+.theme-bg-nav { background-color: var(--color-bg-nav); }
+.theme-bg-header { background-color: var(--color-header-bg); }
+.theme-text { color: var(--color-text); }
+.theme-text-muted { color: var(--color-text-muted); }
+.theme-text-light { color: var(--color-text-light); }
+.theme-text-header { color: var(--color-header-text); }
+.theme-text-primary { color: var(--color-primary); }
+.theme-text-secondary { color: var(--color-secondary); }
+.theme-text-accent { color: var(--color-accent); }
+.theme-text-success { color: var(--color-success); }
+.theme-text-warning { color: var(--color-warning); }
+.theme-text-error { color: var(--color-error); }
+.theme-border { border-color: var(--color-border); }
+.theme-shadow { box-shadow: var(--shadow-card); }
+.theme-shadow-sm { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
+.theme-shadow-lg { box-shadow: var(--shadow-lg); }
+
+.theme-btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  transition: filter 0.2s;
+}
+.theme-btn-primary:hover {
+  filter: brightness(0.9);
+}
+
+/* ── Responsive tablet adjustments ── */
+
+@media (max-width: 1024px) {
+  .responsive-main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .responsive-tabs button {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 0.8125rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  .responsive-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

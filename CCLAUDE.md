@@ -1,0 +1,6 @@
+- shinobue-no-tatsujin-spec.md が仕様書です。必ず参照してください
+- 言語: TypeScript strict mode
+- スタイル: Tailwind CSS
+- テスト: Vitest
+- コミットメッセージ: 日本語でOK
+- 新しいファイルを作る前に仕様書のディレクトリ構成に従うこと
