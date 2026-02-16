@@ -19,6 +19,7 @@ describe('EditorToolbar', () => {
     title: 'テスト曲',
     onTitleChange: () => {},
     hasSelection: false,
+    canTie: false,
     onDelete: () => {},
     onTie: () => {},
     onSave: () => {},
@@ -130,15 +131,15 @@ describe('EditorToolbar', () => {
     expect(screen.getByTitle('伸ばし（タイ）を追加/解除 (T)')).toBeInTheDocument()
   })
 
-  it('hasSelection=false の時、伸ばしボタンが無効', () => {
-    render(<EditorToolbar {...defaultProps} hasSelection={false} />)
+  it('canTie=false の時、伸ばしボタンが無効', () => {
+    render(<EditorToolbar {...defaultProps} canTie={false} />)
     const btn = screen.getByTitle('伸ばし（タイ）を追加/解除 (T)')
     expect(btn).toBeDisabled()
   })
 
   it('伸ばしボタンクリックで onTie が呼ばれる', () => {
     const onTie = vi.fn()
-    render(<EditorToolbar {...defaultProps} hasSelection={true} onTie={onTie} />)
+    render(<EditorToolbar {...defaultProps} canTie={true} onTie={onTie} />)
     fireEvent.click(screen.getByTitle('伸ばし（タイ）を追加/解除 (T)'))
     expect(onTie).toHaveBeenCalledOnce()
   })

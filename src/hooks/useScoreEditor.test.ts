@@ -219,6 +219,178 @@ describe('useScoreEditor', () => {
     expect(result.current.score.measures[0]!.notes.length).toBe(beforeCount)
   })
 
+  it('toggleTie でタイ選択中にさらにタイを追加できる', () => {
+    const { result } = renderHook(() => useScoreEditor())
+
+    // 音符を追加
+    let noteId: string
+    act(() => {
+      noteId = result.current.addNote(1, testPitch, 0, 'note')
+    })
+
+    // 音符の後にタイを追加
+    act(() => {
+      result.current.toggleTie(1, noteId!)
+    })
+
+    const notes1 = result.current.score.measures[0]!.notes
+    const tieIndex = notes1.findIndex((n) => n.type === 'tie')
+    const tieId = notes1[tieIndex]!.id
+    const countAfterFirstTie = notes1.length
+
+    // タイを選択して更にタイを追加
+    act(() => {
+      result.current.toggleTie(1, tieId)
+    })
+
+    const notes2 = result.current.score.measures[0]!.notes
+    expect(notes2.length).toBe(countAfterFirstTie + 1)
+
+    // 元のタイの直後に新しいタイが挿入されている
+    const origTieIdx = notes2.findIndex((n) => n.id === tieId)
+    expect(notes2[origTieIdx + 1]!.type).toBe('tie')
+    expect(notes2[origTieIdx + 1]!.id).not.toBe(tieId)
+  })
+
+  it('toggleTie で連続タイを作れる（三 ～ ～ ～）', () => {
+    const { result } = renderHook(() => useScoreEditor())
+
+    // 音符を追加
+    let noteId: string
+    act(() => {
+      noteId = result.current.addNote(1, testPitch, 0, 'note')
+    })
+
+    // 1個目のタイ
+    act(() => {
+      result.current.toggleTie(1, noteId!)
+    })
+
+    // 1個目のタイのIDを取得して選択し、2個目のタイを追加
+    let tie1Id: string
+    {
+      const notes = result.current.score.measures[0]!.notes
+      const noteIdx = notes.findIndex((n) => n.id === noteId!)
+      tie1Id = notes[noteIdx + 1]!.id
+    }
+    act(() => {
+      result.current.toggleTie(1, tie1Id)
+    })
+
+    // 2個目のタイのIDを取得して選択し、3個目のタイを追加
+    let tie2Id: string
+    {
+      const notes = result.current.score.measures[0]!.notes
+      const tie1Idx = notes.findIndex((n) => n.id === tie1Id)
+      tie2Id = notes[tie1Idx + 1]!.id
+    }
+    act(() => {
+      result.current.toggleTie(1, tie2Id)
+    })
+
+    // 音符 + タイ3つ = 4つ (+ 初期の休符)
+    const notes = result.current.score.measures[0]!.notes
+    const noteIdx = notes.findIndex((n) => n.id === noteId!)
+    expect(notes[noteIdx]!.type).toBe('note')
+    expect(notes[noteIdx + 1]!.type).toBe('tie')
+    expect(notes[noteIdx + 2]!.type).toBe('tie')
+    expect(notes[noteIdx + 3]!.type).toBe('tie')
+  })
+
+  describe('appendTie', () => {
+    it('末尾が音符の場合にタイを追加できる', () => {
+      const { result } = renderHook(() => useScoreEditor())
+
+      // 音符を追加
+      act(() => {
+        result.current.addNote(1, testPitch, 0, 'note')
+      })
+
+      const beforeCount = result.current.score.measures[0]!.notes.length
+
+      act(() => {
+        result.current.appendTie(1)
+      })
+
+      const notes = result.current.score.measures[0]!.notes
+      expect(notes.length).toBe(beforeCount + 1)
+      expect(notes[notes.length - 1]!.type).toBe('tie')
+    })
+
+    it('末尾がタイの場合にさらにタイを追加できる', () => {
+      const { result } = renderHook(() => useScoreEditor())
+
+      // 音符を追加
+      let noteId: string
+      act(() => {
+        noteId = result.current.addNote(1, testPitch, 0, 'note')
+      })
+
+      // タイを追加
+      act(() => {
+        result.current.toggleTie(1, noteId!)
+      })
+
+      const beforeCount = result.current.score.measures[0]!.notes.length
+
+      // appendTie でさらにタイを追加
+      act(() => {
+        result.current.appendTie(1)
+      })
+
+      const notes = result.current.score.measures[0]!.notes
+      expect(notes.length).toBe(beforeCount + 1)
+      expect(notes[notes.length - 1]!.type).toBe('tie')
+    })
+
+    it('末尾が休符の場合はタイを追加しない', () => {
+      const { result } = renderHook(() => useScoreEditor())
+
+      // 初期状態は休符のみ
+      const beforeCount = result.current.score.measures[0]!.notes.length
+
+      act(() => {
+        result.current.appendTie(1)
+      })
+
+      expect(result.current.score.measures[0]!.notes.length).toBe(beforeCount)
+    })
+
+    it('空の小節にはタイを追加しない', () => {
+      const { result } = renderHook(() => useScoreEditor())
+
+      // 初期の休符を削除して空にする
+      const restId = result.current.score.measures[0]!.notes[0]!.id
+      act(() => {
+        result.current.deleteNote(1, restId)
+      })
+      expect(result.current.score.measures[0]!.notes.length).toBe(0)
+
+      act(() => {
+        result.current.appendTie(1)
+      })
+
+      expect(result.current.score.measures[0]!.notes.length).toBe(0)
+    })
+
+    it('appendTie 後に新しいタイが選択される', () => {
+      const { result } = renderHook(() => useScoreEditor())
+
+      act(() => {
+        result.current.addNote(1, testPitch, 0, 'note')
+      })
+
+      act(() => {
+        result.current.appendTie(1)
+      })
+
+      const notes = result.current.score.measures[0]!.notes
+      const lastNote = notes[notes.length - 1]!
+      expect(lastNote.type).toBe('tie')
+      expect(result.current.selectedNoteId).toBe(lastNote.id)
+    })
+  })
+
   it('Undo/Redo が動作する', () => {
     const { result } = renderHook(() => useScoreEditor())
 

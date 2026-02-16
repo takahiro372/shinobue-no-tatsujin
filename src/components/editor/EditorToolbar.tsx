@@ -13,6 +13,7 @@ interface EditorToolbarProps {
   title: string
   onTitleChange: (title: string) => void
   hasSelection: boolean
+  canTie: boolean
   onDelete: () => void
   onTie: () => void
   onSave: () => void
@@ -40,6 +41,7 @@ export function EditorToolbar({
   title,
   onTitleChange,
   hasSelection,
+  canTie,
   onDelete,
   onTie,
   onSave,
@@ -121,7 +123,7 @@ export function EditorToolbar({
         </button>
         <button
           onClick={onTie}
-          disabled={!hasSelection}
+          disabled={!canTie}
           className="px-2 py-1 text-xs rounded bg-gray-100 hover:bg-blue-100 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors font-bold"
           title="伸ばし（タイ）を追加/解除 (T)"
         >

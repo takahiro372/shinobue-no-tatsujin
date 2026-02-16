@@ -136,7 +136,7 @@ export function useScoreEditor(initialScore?: Score) {
     setIsDirty(true)
   }, [score, pushUndo])
 
-  /** タイ（伸ばし）をトグル: 選択中の音符の直後にタイを追加、または直後のタイを削除 */
+  /** タイ（伸ばし）をトグル/追加: 音符の直後にタイを追加/削除、タイの直後にさらにタイを追加 */
   const toggleTie = useCallback((measureNumber: number, noteId: string) => {
     const measure = score.measures.find((m) => m.number === measureNumber)
     if (!measure) return
@@ -145,15 +145,15 @@ export function useScoreEditor(initialScore?: Score) {
     if (noteIndex === -1) return
 
     const targetNote = measure.notes[noteIndex]!
-    // タイは音符にしか付けられない（休符やタイ自体にはNG）
-    if (targetNote.type !== 'note') return
+    // 休符にはタイを付けられない
+    if (targetNote.type === 'rest') return
 
     const nextNote = measure.notes[noteIndex + 1]
 
     pushUndo(score)
 
-    if (nextNote && nextNote.type === 'tie') {
-      // 直後がタイなら削除して詰める
+    if (targetNote.type === 'note' && nextNote && nextNote.type === 'tie') {
+      // 音符選択時: 直後がタイなら削除して詰める（トグル）
       const filtered = measure.notes.filter((n) => n.id !== nextNote.id)
       let beat = 0
       const reindexed = filtered.map((n) => {
@@ -163,7 +163,7 @@ export function useScoreEditor(initialScore?: Score) {
       })
       setScore(updateMeasure(score, measureNumber, (m) => ({ ...m, notes: reindexed })))
     } else {
-      // タイを追加（選択中音符の直後に挿入）
+      // 音符またはタイ選択時: 直後にタイを挿入
       const tieNote: NoteEvent = {
         id: generateNoteId(),
         type: 'tie',
@@ -181,6 +181,29 @@ export function useScoreEditor(initialScore?: Score) {
       })
       setScore(updateMeasure(score, measureNumber, (m) => ({ ...m, notes: reindexed })))
     }
+    setIsDirty(true)
+  }, [score, currentDuration, pushUndo])
+
+  /** 追加モードで末尾にタイを追加（末尾が音符またはタイの場合のみ） */
+  const appendTie = useCallback((measureNumber: number) => {
+    const measure = score.measures.find((m) => m.number === measureNumber)
+    if (!measure || measure.notes.length === 0) return
+
+    const lastNote = measure.notes[measure.notes.length - 1]!
+    if (lastNote.type !== 'note' && lastNote.type !== 'tie') return
+
+    pushUndo(score)
+    const tieNote: NoteEvent = {
+      id: generateNoteId(),
+      type: 'tie',
+      duration: { type: currentDuration, dots: 0 },
+      startBeat: lastNote.startBeat + 1,
+    }
+    const updated = updateMeasure(score, measureNumber, (m) =>
+      addNoteToMeasure(m, tieNote),
+    )
+    setScore(updated)
+    setSelectedNoteId(tieNote.id)
     setIsDirty(true)
   }, [score, currentDuration, pushUndo])
 
@@ -245,6 +268,7 @@ export function useScoreEditor(initialScore?: Score) {
     replaceNote,
     changeDuration,
     toggleTie,
+    appendTie,
     addMeasure,
     deleteMeasure,
     updateMetadata,

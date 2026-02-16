@@ -106,11 +106,13 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
     }
   }, [])
 
-  // 伸ばし（タイ）トグル
+  // 伸ばし（タイ）トグル / 追加モード末尾追加
   const handleTie = useCallback(() => {
     const ed = editorRef.current
     if (ed.selectedNoteId) {
       ed.toggleTie(ed.selectedMeasure, ed.selectedNoteId)
+    } else {
+      ed.appendTie(ed.selectedMeasure)
     }
   }, [])
 
@@ -252,9 +254,11 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
       }
       // Tie: T key
       if (!e.ctrlKey && !e.altKey && (e.key === 't' || e.key === 'T')) {
+        e.preventDefault()
         if (ed.selectedNoteId) {
-          e.preventDefault()
           ed.toggleTie(ed.selectedMeasure, ed.selectedNoteId)
+        } else {
+          ed.appendTie(ed.selectedMeasure)
         }
       }
       // Duration shortcuts
@@ -273,6 +277,15 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
 
   // 入力モード
   const inputMode: InputMode = editor.selectedNoteId ? 'overwrite' : 'append'
+
+  // 伸ばしボタンの有効判定: 選択中、または追加モードで末尾が音符/タイ
+  const canTie = (() => {
+    if (editor.selectedNoteId) return true
+    const measure = editor.score.measures.find((m) => m.number === editor.selectedMeasure)
+    if (!measure || measure.notes.length === 0) return false
+    const lastNote = measure.notes[measure.notes.length - 1]!
+    return lastNote.type === 'note' || lastNote.type === 'tie'
+  })()
 
   // 小節エリアの空白クリックで選択解除
   const handleDeselect = useCallback(() => {
@@ -304,6 +317,7 @@ export function ScoreEditor({ initialScore, onScoreChange, onDirtyChange }: Scor
         title={editor.score.metadata.title}
         onTitleChange={(title) => editor.updateMetadata({ title })}
         hasSelection={editor.selectedNoteId !== null}
+        canTie={canTie}
         onDelete={handleDelete}
         onTie={handleTie}
         onSave={handleSave}
