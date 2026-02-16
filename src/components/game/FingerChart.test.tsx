@@ -28,7 +28,7 @@ describe('FingerChart', () => {
       register: 'ro' as const,
       fingering: [true, true, true, true, false, false, false],
       western: 'E5',
-      frequency: 659.26,
+      frequency: 659.25,
       name: '三',
     }
     render(<FingerChart shinobueKey="nana" activeNote={note} />)

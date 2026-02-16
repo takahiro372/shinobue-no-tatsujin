@@ -37,7 +37,7 @@ function createTestScore(): Score {
       }),
       createNoteEvent({
         type: 'note',
-        pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.26, midiNote: 76, western: 'E5' },
+        pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.25, midiNote: 76, western: 'E5' },
         durationType: 'quarter',
         startBeat: 3,
       }),
@@ -98,7 +98,7 @@ describe('scoreToGameNotes', () => {
       notes: [
         createNoteEvent({
           type: 'note',
-          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.26, midiNote: 76, western: 'E5' },
+          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.25, midiNote: 76, western: 'E5' },
           durationType: 'quarter',
           startBeat: 0,
         }),
@@ -115,10 +115,10 @@ describe('scoreToGameNotes', () => {
       ],
     }))
     const notes = scoreToGameNotes(score)
-    expect(notes[0]!.frequency).toBe(659.26)
-    expect(notes[1]!.frequency).toBe(659.26)
+    expect(notes[0]!.frequency).toBe(659.25)
+    expect(notes[1]!.frequency).toBe(659.25)
     expect(notes[1]!.shinobueName).toBe('～')
-    expect(notes[2]!.frequency).toBe(659.26)
+    expect(notes[2]!.frequency).toBe(659.25)
     expect(notes[2]!.shinobueName).toBe('～')
   })
 })
@@ -319,7 +319,7 @@ describe('GameEngine register restriction', () => {
       notes: [
         createNoteEvent({
           type: 'note',
-          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.26, midiNote: 76, western: 'E5' },
+          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.25, midiNote: 76, western: 'E5' },
           durationType: 'quarter',
           startBeat: 0,
         }),
@@ -356,7 +356,7 @@ describe('GameEngine register restriction', () => {
       notes: [
         createNoteEvent({
           type: 'note',
-          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.26, midiNote: 76, western: 'E5' },
+          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.25, midiNote: 76, western: 'E5' },
           durationType: 'quarter',
           startBeat: 0,
         }),
@@ -392,7 +392,7 @@ describe('GameEngine register restriction', () => {
       notes: [
         createNoteEvent({
           type: 'note',
-          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.26, midiNote: 76, western: 'E5' },
+          pitch: { shinobueNumber: 3, register: 'ro', frequency: 659.25, midiNote: 76, western: 'E5' },
           durationType: 'quarter',
           startBeat: 0,
         }),

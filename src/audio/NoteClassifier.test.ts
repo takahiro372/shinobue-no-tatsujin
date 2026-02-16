@@ -20,8 +20,8 @@ describe('NoteClassifier（七本調子）', () => {
     expect(result!.shinobueNote.register).toBe('ro')
   })
 
-  it('E5 (659.26Hz) → 三（呂）', () => {
-    const result = classifier.classify(659.26, 0.95)
+  it('E5 (659.25Hz) → 三（呂）', () => {
+    const result = classifier.classify(659.25, 0.95)
     expect(result).not.toBeNull()
     expect(result!.shinobueNote.name).toBe('三')
   })
@@ -107,6 +107,48 @@ describe('NoteClassifier（六本調子）', () => {
     expect(result).not.toBeNull()
     expect(result!.shinobueNote.name).toBe('七')
     expect(result!.shinobueNote.register).toBe('ro')
+  })
+})
+
+describe('NoteClassifier（八本調子）', () => {
+  const classifier = new NoteClassifier('hachi')
+
+  it('C5 (523.25Hz) → 筒音', () => {
+    const result = classifier.classify(523.25, 0.95)
+    expect(result).not.toBeNull()
+    expect(result!.shinobueNote.name).toBe('筒音')
+    expect(result!.shinobueNote.frequency).toBe(523.25)
+  })
+
+  it('E5 (659.25Hz) → 二（呂）', () => {
+    const result = classifier.classify(659.25, 0.95)
+    expect(result).not.toBeNull()
+    expect(result!.shinobueNote.name).toBe('二')
+    expect(result!.shinobueNote.western).toBe('E5')
+  })
+
+  it('A5 (880Hz) → 五（呂）', () => {
+    const result = classifier.classify(880, 0.95)
+    expect(result).not.toBeNull()
+    expect(result!.shinobueNote.name).toBe('五')
+    expect(result!.shinobueNote.western).toBe('A5')
+  })
+
+  it('B5 (987.77Hz) → 六（呂）', () => {
+    const result = classifier.classify(987.77, 0.95)
+    expect(result).not.toBeNull()
+    expect(result!.shinobueNote.name).toBe('六')
+    expect(result!.shinobueNote.western).toBe('B5')
+  })
+
+  it('全ての運指表エントリに対して正確にマッピングする', () => {
+    const chart = classifier.getChart()
+    for (const note of chart) {
+      const result = classifier.classify(note.frequency, 0.95)
+      expect(result).not.toBeNull()
+      expect(result!.shinobueNote.name).toBe(note.name)
+      expect(Math.abs(result!.centOffset)).toBeLessThan(1)
+    }
   })
 })
 

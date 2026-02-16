@@ -64,7 +64,7 @@ function makeTestNotes(): GameNote[] {
     },
     {
       id: 'n4', timeMs: 1500, durationMs: 500,
-      frequency: 659.26, midiNote: 76, shinobueNumber: 3,
+      frequency: 659.25, midiNote: 76, shinobueNumber: 3,
       register: 'ro', western: 'E5', shinobueName: '三',
       judgement: null, judged: false,
     },

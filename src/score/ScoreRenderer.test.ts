@@ -36,7 +36,7 @@ function createTestScore(): Score {
       pitch: {
         shinobueNumber: 3,
         register: 'ro',
-        frequency: 659.26,
+        frequency: 659.25,
         midiNote: 64,
         western: 'E5',
       },

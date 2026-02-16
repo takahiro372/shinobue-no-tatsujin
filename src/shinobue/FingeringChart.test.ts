@@ -63,9 +63,34 @@ describe('FINGERING_CHART_ROKU（六本調子）', () => {
 })
 
 describe('FINGERING_CHART_HACHI（八本調子）', () => {
-  it('筒音は C5', () => {
+  it('筒音は C5 (523.25Hz)', () => {
     const tsutsuNe = FINGERING_CHART_HACHI[0]!
     expect(tsutsuNe.western).toBe('C5')
+    expect(tsutsuNe.frequency).toBe(523.25)
+  })
+
+  it('呂音の音階が C-D-E-F-G-A-B-C', () => {
+    const ro = FINGERING_CHART_HACHI.filter((n) => n.register === 'ro')
+    const westerns = ro.map((n) => n.western)
+    expect(westerns).toEqual(['C5', 'D5', 'E5', 'F5', 'G5', 'A5', 'B5', 'C6'])
+  })
+
+  it('呂音の周波数が正しい', () => {
+    const ro = FINGERING_CHART_HACHI.filter((n) => n.register === 'ro')
+    const freqs = ro.map((n) => n.frequency)
+    expect(freqs).toEqual([523.25, 587.33, 659.25, 698.46, 783.99, 880.0, 987.77, 1046.50])
+  })
+
+  it('合計19音ある', () => {
+    expect(FINGERING_CHART_HACHI).toHaveLength(19)
+  })
+
+  it('周波数は昇順', () => {
+    for (let i = 1; i < FINGERING_CHART_HACHI.length; i++) {
+      expect(FINGERING_CHART_HACHI[i]!.frequency).toBeGreaterThan(
+        FINGERING_CHART_HACHI[i - 1]!.frequency,
+      )
+    }
   })
 })
 
@@ -82,7 +107,7 @@ describe('getFingeringChart', () => {
     expect(getFingeringChart('hachi')).toBe(FINGERING_CHART_HACHI)
   })
 
-  it('不明なキーではデフォルト（七本調子）を返す', () => {
-    expect(getFingeringChart('unknown')).toBe(FINGERING_CHART_NANA)
+  it('不明なキーではデフォルト（八本調子）を返す', () => {
+    expect(getFingeringChart('unknown')).toBe(FINGERING_CHART_HACHI)
   })
 })

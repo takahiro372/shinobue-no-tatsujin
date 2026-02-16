@@ -10,7 +10,6 @@ import { ScoreBoard } from './ScoreBoard'
 import { JudgementDisplay } from './JudgementDisplay'
 import { CountdownOverlay } from './CountdownOverlay'
 import { ResultScreen } from './ResultScreen'
-import { FingeringDiagram } from './FingerChart'
 import { PitchMeter } from './PitchMeter'
 import { getFingeringChart } from '../../shinobue/FingeringChart'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -237,21 +236,18 @@ export function GameScreen({ score, difficulty, scrollSpeed, pitchResult, onBack
           className="border-t border-white/10 px-6 py-3 flex items-center justify-center gap-8"
           data-testid="game-bottom-panel"
         >
-          {/* 運指ガイド */}
+          {/* 音名ガイド */}
           {showFingering && (
             <div className="flex items-center gap-4" data-testid="game-fingering-guide">
               {activeFingeringNote ? (
-                <>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-white">
-                      {activeFingeringNote.name}
-                    </div>
-                    <div className="text-xs text-white/40">
-                      {activeFingeringNote.western}
-                    </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-white">
+                    {activeFingeringNote.name}
                   </div>
-                  <FingeringDiagram fingering={activeFingeringNote.fingering} size="lg" />
-                </>
+                  <div className="text-xs text-white/40">
+                    {activeFingeringNote.western}
+                  </div>
+                </div>
               ) : (
                 <div className="text-sm text-white/30">---</div>
               )}

@@ -10,15 +10,15 @@ export const SHINOBUE_KEYS: Record<string, ShinobueKey> = {
   nana: {
     name: '七本調子',
     baseNote: 'B4',
-    baseFrequency: 494,
-    range: { lowest: 494, highest: 2960 },
+    baseFrequency: 493.88,
+    range: { lowest: 493.88, highest: 2959.96 },
   },
   hachi: {
     name: '八本調子',
     baseNote: 'C5',
-    baseFrequency: 523,
-    range: { lowest: 523, highest: 3136 },
+    baseFrequency: 523.25,
+    range: { lowest: 523.25, highest: 3135.96 },
   },
 }
 
-export const DEFAULT_SHINOBUE_KEY = 'nana'
+export const DEFAULT_SHINOBUE_KEY = 'hachi'
