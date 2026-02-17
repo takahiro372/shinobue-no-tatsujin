@@ -4,12 +4,12 @@ import { useLongTone } from './useLongTone'
 import type { ShinobueNote, ClassifiedNote } from '../types/shinobue'
 
 const targetNote: ShinobueNote = {
-  number: 0,
+  number: 1,
   register: 'ro',
-  fingering: [true, true, true, true, true, true, true],
-  frequency: 493.88,
-  western: 'B4',
-  name: '筒音',
+  fingering: [true, true, true, true, true, true, false],
+  frequency: 554.37,
+  western: 'C#5',
+  name: '一',
 }
 
 function makeClassified(freqOffset = 0): ClassifiedNote {

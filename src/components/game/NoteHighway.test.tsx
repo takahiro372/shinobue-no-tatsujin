@@ -46,8 +46,8 @@ function makeTestNotes(): GameNote[] {
   return [
     {
       id: 'n1', timeMs: 0, durationMs: 500,
-      frequency: 493.88, midiNote: 71, shinobueNumber: 0,
-      register: 'ro', western: 'B4', shinobueName: '筒音',
+      frequency: 554.37, midiNote: 73, shinobueNumber: 1,
+      register: 'ro', western: 'C#5', shinobueName: '一',
       judgement: null, judged: false,
     },
     {
@@ -157,8 +157,8 @@ describe('NoteHighway', () => {
     const notes: GameNote[] = [
       {
         id: 'n-ro', timeMs: 0, durationMs: 500,
-        frequency: 493.88, midiNote: 71, shinobueNumber: 0,
-        register: 'ro', western: 'B4', shinobueName: '筒音',
+        frequency: 554.37, midiNote: 73, shinobueNumber: 1,
+        register: 'ro', western: 'C#5', shinobueName: '一',
         judgement: null, judged: false,
       },
       {
@@ -197,8 +197,8 @@ describe('NoteHighway', () => {
     const notes: GameNote[] = [
       {
         id: 'n1', timeMs: 0, durationMs: 500,
-        frequency: 493.88, midiNote: 71, shinobueNumber: 0,
-        register: 'ro', western: 'B4', shinobueName: '筒音',
+        frequency: 554.37, midiNote: 73, shinobueNumber: 1,
+        register: 'ro', western: 'C#5', shinobueName: '一',
         judgement: null, judged: false,
       },
       {

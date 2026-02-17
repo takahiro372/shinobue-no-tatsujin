@@ -14,15 +14,15 @@ test.describe('運指表', () => {
   })
 
   test('全音の運指カードが表示される', async ({ page }) => {
-    // 七本調子のデフォルト: 呂7 + 甲8 + 大甲4 = 19音
+    // 七本調子のデフォルト: 呂7 + 甲7 + 大甲4 = 18音
     const cards = page.locator('div[role="img"][aria-label="運指図"]')
     const count = await cards.count()
-    expect(count).toBeGreaterThanOrEqual(15) // 最低限の音数
+    expect(count).toBeGreaterThanOrEqual(14) // 最低限の音数
   })
 
   test('呂音の音名が表示される', async ({ page }) => {
-    // 呂音の名前は「筒音」「一」「二」...「七」
-    await expect(page.getByText('筒音', { exact: true })).toBeVisible()
+    // 呂音の名前は「一」「二」...「七」
+    await expect(page.getByText('一', { exact: true }).first()).toBeVisible()
     await expect(page.getByText('七', { exact: true }).first()).toBeVisible()
   })
 
@@ -37,13 +37,13 @@ test.describe('運指表', () => {
   })
 
   test('Western音名が表示される', async ({ page }) => {
-    // 七本調子の筒音は B4
-    await expect(page.locator('text=B4')).toBeVisible()
+    // 七本調子の一は C#5
+    await expect(page.locator('text=C#5')).toBeVisible()
   })
 
   test('調子を変更すると運指表が更新される', async ({ page }) => {
-    // 七本調子で B4 が見える
-    await expect(page.locator('text=B4')).toBeVisible()
+    // 七本調子で C#5 が見える
+    await expect(page.locator('text=C#5')).toBeVisible()
 
     // 六本調子に変更
     const select = page.locator('header select').last()

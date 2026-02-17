@@ -30,7 +30,7 @@ interface PracticeStoreState {
 }
 
 const DEFAULT_LONG_TONE_CONFIG: LongToneConfig = {
-  targetNoteNumber: 0,
+  targetNoteNumber: 1,
   targetRegister: 'ro',
   duration: 10,
   toleranceCents: 10,

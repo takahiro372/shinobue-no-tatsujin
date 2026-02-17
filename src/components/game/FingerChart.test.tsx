@@ -10,16 +10,15 @@ describe('FingerChart', () => {
 
   it('七本調子の全音名が表示される', () => {
     render(<FingerChart shinobueKey="nana" />)
-    expect(screen.getByText('筒音')).toBeInTheDocument()
     expect(screen.getByText('一')).toBeInTheDocument()
     expect(screen.getByText('3')).toBeInTheDocument()
     expect(screen.getByText('大1')).toBeInTheDocument()
   })
 
-  it('六本調子に切り替えるとA4が筒音として表示される', () => {
+  it('六本調子に切り替えるとB4が一として表示される', () => {
     render(<FingerChart shinobueKey="roku" />)
-    expect(screen.getByText('筒音')).toBeInTheDocument()
-    expect(screen.getByText('A4')).toBeInTheDocument()
+    expect(screen.getByText('一')).toBeInTheDocument()
+    expect(screen.getByText('B4')).toBeInTheDocument()
   })
 
   it('activeNote が指定されるとハイライトされる', () => {

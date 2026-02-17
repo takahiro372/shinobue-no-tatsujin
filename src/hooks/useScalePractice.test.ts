@@ -5,9 +5,9 @@ import type { ShinobueNote, ClassifiedNote } from '../types/shinobue'
 import type { ScaleConfig } from '../types/practice'
 
 const chart: ShinobueNote[] = [
-  { number: 0, register: 'ro', fingering: [true, true, true, true, true, true, true], frequency: 493.88, western: 'B4', name: '筒音' },
   { number: 1, register: 'ro', fingering: [true, true, true, true, true, true, false], frequency: 554.37, western: 'C#5', name: '一' },
   { number: 2, register: 'ro', fingering: [true, true, true, true, true, false, false], frequency: 587.33, western: 'D5', name: '二' },
+  { number: 3, register: 'ro', fingering: [true, true, true, true, false, false, false], frequency: 659.25, western: 'E5', name: '三' },
 ]
 
 const baseConfig: ScaleConfig = {
@@ -37,7 +37,7 @@ describe('useScalePractice', () => {
 
     expect(result.current.status).toBe('active')
     expect(result.current.noteSequence).toHaveLength(3)
-    expect(result.current.noteSequence[0]!.name).toBe('筒音')
+    expect(result.current.noteSequence[0]!.name).toBe('一')
   })
 
   it('descending パターンで逆順', () => {
@@ -47,7 +47,7 @@ describe('useScalePractice', () => {
       result.current.start(chart, { ...baseConfig, pattern: 'descending' })
     })
 
-    expect(result.current.noteSequence[0]!.name).toBe('二')
+    expect(result.current.noteSequence[0]!.name).toBe('三')
   })
 
   it('skip パターンで1つ飛び', () => {
@@ -58,8 +58,8 @@ describe('useScalePractice', () => {
     })
 
     expect(result.current.noteSequence).toHaveLength(2) // index 0, 2
-    expect(result.current.noteSequence[0]!.name).toBe('筒音')
-    expect(result.current.noteSequence[1]!.name).toBe('二')
+    expect(result.current.noteSequence[0]!.name).toBe('一')
+    expect(result.current.noteSequence[1]!.name).toBe('三')
   })
 
   it('正しい音を出すと isCorrect になる', () => {

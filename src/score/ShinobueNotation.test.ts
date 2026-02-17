@@ -8,7 +8,7 @@ import {
 import type { NoteEvent, NotePitch } from './ScoreModel'
 
 describe('numberToKanji', () => {
-  it('0 → 〇 (筒音)', () => {
+  it('0 → 〇', () => {
     expect(numberToKanji(0)).toBe('〇')
   })
 
@@ -59,15 +59,15 @@ describe('noteToSujiText', () => {
     expect(noteToSujiText(pitch)).toBe('大2')
   })
 
-  it('筒音 → "筒音"', () => {
+  it('一（呂音）→ "一"', () => {
     const pitch: NotePitch = {
-      shinobueNumber: 0,
+      shinobueNumber: 1,
       register: 'ro',
-      frequency: 494,
-      midiNote: 59,
-      western: 'B4',
+      frequency: 554,
+      midiNote: 61,
+      western: 'C#5',
     }
-    expect(noteToSujiText(pitch)).toBe('筒音')
+    expect(noteToSujiText(pitch)).toBe('一')
   })
 })
 

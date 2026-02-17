@@ -78,6 +78,7 @@ export function TunerView({ pitch: externalPitch }: TunerViewProps = {}) {
       {showDebugPanel && (
         <DebugPanel
           rawData={pitch.rawData}
+          nearestNote={nearestNote}
           noiseGate={noiseGate}
           setNoiseGate={setNoiseGate}
           confidenceThreshold={pitchConfidenceThreshold}
@@ -173,12 +174,14 @@ export function TunerView({ pitch: externalPitch }: TunerViewProps = {}) {
 /** デバッグパネル */
 function DebugPanel({
   rawData,
+  nearestNote,
   noiseGate,
   setNoiseGate,
   confidenceThreshold,
   setConfidenceThreshold,
 }: {
   rawData: RawDetectionData
+  nearestNote: { note: { name: string; western: string; frequency: number }; centOffset: number } | null
   noiseGate: number
   setNoiseGate: (db: number) => void
   confidenceThreshold: number
@@ -218,12 +221,28 @@ function DebugPanel({
         </div>
       </div>
 
-      {/* 生の周波数 */}
-      <div className="flex justify-between">
-        <span className="theme-text-muted">Raw Frequency</span>
-        <span className="theme-text">
-          {rawData.rawFrequency !== null ? `${rawData.rawFrequency.toFixed(1)} Hz` : '---'}
-        </span>
+      {/* 周波数 → 音名マッピング */}
+      <div className="p-2 rounded bg-gray-100 dark:bg-gray-800 space-y-1">
+        <div className="flex justify-between">
+          <span className="theme-text-muted">Frequency</span>
+          <span className="theme-text font-bold">
+            {rawData.rawFrequency !== null ? `${rawData.rawFrequency.toFixed(1)} Hz` : '---'}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="theme-text-muted">Detected Note</span>
+          <span className="theme-text font-bold">
+            {nearestNote
+              ? `${nearestNote.note.name} (${nearestNote.note.western}) ${nearestNote.centOffset >= 0 ? '+' : ''}${nearestNote.centOffset.toFixed(1)}c`
+              : '---'}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="theme-text-muted">Expected Freq</span>
+          <span className="theme-text">
+            {nearestNote ? `${nearestNote.note.frequency.toFixed(2)} Hz` : '---'}
+          </span>
+        </div>
       </div>
 
       {/* Confidence */}

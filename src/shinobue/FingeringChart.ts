@@ -7,7 +7,6 @@ import type { ShinobueNote } from '../types/shinobue'
  */
 export const FINGERING_CHART_NANA: ShinobueNote[] = [
   // 呂音
-  { number: 0, register: 'ro', fingering: [true, true, true, true, true, true, true], western: 'B4', frequency: 493.88, name: '筒音' },
   { number: 1, register: 'ro', fingering: [true, true, true, true, true, true, false], western: 'C#5', frequency: 554.37, name: '一' },
   { number: 2, register: 'ro', fingering: [true, true, true, true, true, false, false], western: 'D5', frequency: 587.33, name: '二' },
   { number: 3, register: 'ro', fingering: [true, true, true, true, false, false, false], western: 'E5', frequency: 659.25, name: '三' },
@@ -35,7 +34,6 @@ export const FINGERING_CHART_NANA: ShinobueNote[] = [
  */
 export const FINGERING_CHART_ROKU: ShinobueNote[] = [
   // 呂音
-  { number: 0, register: 'ro', fingering: [true, true, true, true, true, true, true], western: 'A4', frequency: 440.0, name: '筒音' },
   { number: 1, register: 'ro', fingering: [true, true, true, true, true, true, false], western: 'B4', frequency: 493.88, name: '一' },
   { number: 2, register: 'ro', fingering: [true, true, true, true, true, false, false], western: 'C5', frequency: 523.25, name: '二' },
   { number: 3, register: 'ro', fingering: [true, true, true, true, false, false, false], western: 'D5', frequency: 587.33, name: '三' },
@@ -63,7 +61,6 @@ export const FINGERING_CHART_ROKU: ShinobueNote[] = [
  */
 export const FINGERING_CHART_HACHI: ShinobueNote[] = [
   // 呂音
-  { number: 0, register: 'ro', fingering: [true, true, true, true, true, true, true], western: 'C5', frequency: 523.25, name: '筒音' },
   { number: 1, register: 'ro', fingering: [true, true, true, true, true, true, false], western: 'D5', frequency: 587.33, name: '一' },
   { number: 2, register: 'ro', fingering: [true, true, true, true, true, false, false], western: 'E5', frequency: 659.25, name: '二' },
   { number: 3, register: 'ro', fingering: [true, true, true, true, false, false, false], western: 'F5', frequency: 698.46, name: '三' },
@@ -94,7 +91,8 @@ export function getFingeringChart(key: string): ShinobueNote[] {
     case 'nana':
       return FINGERING_CHART_NANA
     case 'hachi':
-    default:
       return FINGERING_CHART_HACHI
+    default:
+      return FINGERING_CHART_NANA
   }
 }

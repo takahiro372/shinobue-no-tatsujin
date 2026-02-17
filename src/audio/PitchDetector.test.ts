@@ -39,7 +39,7 @@ describe('PitchDetector', () => {
     expect(result!.noteName).toBe('A5')
   })
 
-  it('494Hz (B4, 七本調子の筒音) を正しく検出する', () => {
+  it('494Hz (B4) を正しく検出する', () => {
     const buffer = generateSineWave(494, sampleRate, bufferSize)
     const result = detector.detect(buffer)
     expect(result).not.toBeNull()

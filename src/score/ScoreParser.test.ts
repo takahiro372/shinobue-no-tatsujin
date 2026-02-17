@@ -120,12 +120,12 @@ describe('parseMusicXML', () => {
     expect(m1.notes.map((n) => n.startBeat)).toEqual([0, 1, 2, 3])
   })
 
-  it('ピッチを正しくパースする (B4 → 篠笛の筒音)', () => {
+  it('ピッチを正しくパースする (B4 → 最も近い一)', () => {
     const score = parseMusicXML(SIMPLE_MUSICXML)
     const firstNote = score.measures[0]!.notes[0]!
     expect(firstNote.pitch).toBeDefined()
     expect(firstNote.pitch!.western).toBe('B4')
-    expect(firstNote.pitch!.shinobueNumber).toBe(0) // 筒音
+    expect(firstNote.pitch!.shinobueNumber).toBe(1) // 一（最も近い音）
     expect(firstNote.pitch!.register).toBe('ro')
   })
 

@@ -13,7 +13,7 @@ vi.mock('../../store/settingsStore', () => ({
 vi.mock('../../store/practiceStore', () => ({
   usePracticeStore: () => ({
     longToneConfig: {
-      targetNoteNumber: 0,
+      targetNoteNumber: 1,
       targetRegister: 'ro',
       duration: 10,
       toleranceCents: 10,
@@ -57,9 +57,9 @@ describe('LongTonePractice', () => {
   it('目標音のプレビューを表示する', () => {
     render(<LongTonePractice classifiedNote={null} isRunning={false} />)
 
-    // 筒音 (nana, number 0, register ro)
-    expect(screen.getByText('筒音')).toBeInTheDocument()
-    expect(screen.getByText('B4')).toBeInTheDocument()
+    // 一 (nana, number 1, register ro)
+    expect(screen.getByText('一')).toBeInTheDocument()
+    expect(screen.getByText('C#5')).toBeInTheDocument()
   })
 
   it('開始ボタンをクリックするとカウントダウンが表示される', () => {

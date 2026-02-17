@@ -21,7 +21,7 @@ describe('practiceStore', () => {
       setLongToneConfig({ duration: 30 })
       const config = usePracticeStore.getState().longToneConfig
       expect(config.duration).toBe(30)
-      expect(config.targetNoteNumber).toBe(0)
+      expect(config.targetNoteNumber).toBe(1)
       expect(config.toleranceCents).toBe(10)
     })
   })

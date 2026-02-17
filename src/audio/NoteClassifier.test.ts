@@ -4,20 +4,13 @@ import { NoteClassifier } from './NoteClassifier'
 describe('NoteClassifier（七本調子）', () => {
   const classifier = new NoteClassifier('nana')
 
-  it('B4 (493.88Hz) → 筒音', () => {
-    const result = classifier.classify(493.88, 0.95)
-    expect(result).not.toBeNull()
-    expect(result!.shinobueNote.name).toBe('筒音')
-    expect(result!.shinobueNote.number).toBe(0)
-    expect(result!.shinobueNote.register).toBe('ro')
-    expect(Math.abs(result!.centOffset)).toBeLessThan(5)
-  })
-
   it('C#5 (554.37Hz) → 一（呂）', () => {
     const result = classifier.classify(554.37, 0.95)
     expect(result).not.toBeNull()
     expect(result!.shinobueNote.name).toBe('一')
+    expect(result!.shinobueNote.number).toBe(1)
     expect(result!.shinobueNote.register).toBe('ro')
+    expect(Math.abs(result!.centOffset)).toBeLessThan(5)
   })
 
   it('E5 (659.25Hz) → 三（呂）', () => {
@@ -41,30 +34,18 @@ describe('NoteClassifier（七本調子）', () => {
   })
 
   it('少しずれた周波数でもセント偏差を正しく計算する', () => {
-    // 筒音 B4 (493.88Hz) より少し低い 490Hz → セント偏差は小さい
-    const result = classifier.classify(490, 0.95)
+    // 一 C#5 (554.37Hz) より少し低い 550Hz → セント偏差は小さい
+    const result = classifier.classify(550, 0.95)
     expect(result).not.toBeNull()
-    expect(result!.shinobueNote.name).toBe('筒音')
+    expect(result!.shinobueNote.name).toBe('一')
     expect(result!.centOffset).toBeLessThan(0) // 低い方にずれている
     expect(Math.abs(result!.centOffset)).toBeLessThan(50)
   })
 
   it('440Hz は七本調子の有効な音域外（50セント超）なので null', () => {
-    // 440Hz (A4) → 最も近い筒音 B4 (493.88Hz) まで約200セント
+    // 440Hz (A4) → 最も近い一 C#5 (554.37Hz) まで約400セント
     const result = classifier.classify(440, 0.95)
     expect(result).toBeNull()
-  })
-
-  it('50セント以上離れた周波数は null を返す', () => {
-    // 筒音 B4 (493.88Hz) と 一 C#5 (554.37Hz) の中間あたり
-    // 522Hz は両方から50セント以上離れている可能性がある
-    const midpoint = Math.sqrt(493.88 * 554.37) // 幾何平均
-    const result = classifier.classify(midpoint, 0.95)
-    // 幾何平均は丁度100セントの中間（50セント）なので、ギリギリ通過する可能性がある
-    // とにかく結果があればcentOffsetは±50以内
-    if (result) {
-      expect(Math.abs(result.centOffset)).toBeLessThanOrEqual(50)
-    }
   })
 
   it('無効な周波数（0や負）では null を返す', () => {
@@ -95,11 +76,11 @@ describe('NoteClassifier（七本調子）', () => {
 describe('NoteClassifier（六本調子）', () => {
   const classifier = new NoteClassifier('roku')
 
-  it('A4 (440Hz) → 筒音', () => {
-    const result = classifier.classify(440, 0.95)
+  it('B4 (493.88Hz) → 一（呂）', () => {
+    const result = classifier.classify(493.88, 0.95)
     expect(result).not.toBeNull()
-    expect(result!.shinobueNote.name).toBe('筒音')
-    expect(result!.shinobueNote.frequency).toBe(440)
+    expect(result!.shinobueNote.name).toBe('一')
+    expect(result!.shinobueNote.frequency).toBe(493.88)
   })
 
   it('A5 (880Hz) → 七（呂）', () => {
@@ -112,14 +93,6 @@ describe('NoteClassifier（六本調子）', () => {
 
 describe('NoteClassifier（八本調子）', () => {
   const classifier = new NoteClassifier('hachi')
-
-  it('C5 (523.25Hz) → 筒音', () => {
-    const result = classifier.classify(523.25, 0.95)
-    expect(result).not.toBeNull()
-    expect(result!.shinobueNote.name).toBe('筒音')
-    expect(result!.shinobueNote.frequency).toBe(523.25)
-    expect(result!.shinobueNote.western).toBe('C5')
-  })
 
   it('D5 (587.33Hz) → 一（呂）', () => {
     const result = classifier.classify(587.33, 0.95)
@@ -198,11 +171,11 @@ describe('NoteClassifier（八本調子）', () => {
 describe('NoteClassifier のキー切り替え', () => {
   const classifier = new NoteClassifier('nana')
 
-  it('roku に切り替えると筒音が A4 になる', () => {
+  it('roku に切り替えると一が B4 になる', () => {
     classifier.setKey('roku')
-    const result = classifier.classify(440, 0.95)
+    const result = classifier.classify(493.88, 0.95)
     expect(result).not.toBeNull()
-    expect(result!.shinobueNote.name).toBe('筒音')
+    expect(result!.shinobueNote.name).toBe('一')
 
     // 元に戻す
     classifier.setKey('nana')
